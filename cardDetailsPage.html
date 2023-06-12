@@ -3,9 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Card Details</title>
+    <link rel="stylesheet" href="./Styles/cardDetails.css">
+ 
 </head>
 <body>
-    
+    <h1>cardDetails</h1>
+    <form id="form" onsubmit="handleSubmit()">
+    <div>
+        <label>Card Number</label>
+        <input type="number" placeholder="XXXXXXXXXXXXXXXX" id="cardNumber">
+    </div>
+    <div>
+        <label>CardHolder Name</label>
+        <input type="text" placeholder="Enter Your Name" id="cardHolderName">
+    </div>
+    <div>
+        <label>CVV</label>
+        <input type="number" placeholder="Enter CVV" id="cvv">
+    </div>
+    <div>
+        <label>Expiry month</label>
+        <select id="expiryMonth">
+            <option value="01">01</option>
+            <option value="02">02</option>
+            <option value="03">03</option>
+            <option value="04">04</option>
+            <option value="05">05</option>
+            <option value="06">06</option>
+            <option value="07">07</option>
+            <option value="08">08</option>
+            <option value="09">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+    </div>
+    <div>
+        <label>Expiry Year</label>
+        <select id="expiryYear"></select>
+    </div>
+    <input type="submit">
+    </form>
 </body>
 </html>
+<script src="./Scripts/cardDetails.js"></script>
