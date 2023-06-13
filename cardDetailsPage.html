@@ -8,9 +8,9 @@
   </head>
 
   <body>
-      <div class="acsText">
-        <h1>Card Details Page</h1>
-      </div>
+    <div class="acsText">
+      <h1>Card Details Page</h1>
+    </div>
     <div id="container">
       <form id="form" onsubmit="handleSubmit()">
         <div>
@@ -18,16 +18,16 @@
           <br />
           <br />
           <div class="inputContainer">
-          <input
-            type="number"
-            placeholder="XXXXXXXXXXXXXXXX"
-            id="cardNumber"
-            class="inputbox"
-            min="0"
-            max="9999999999999999"
-            onkeydown="handleValidationForCardNumber()"
-          />
-        </div>
+            <input
+              type="number"
+              placeholder="XXXXXXXXXXXXXXXX"
+              id="cardNumber"
+              class="inputbox"
+              min="0"
+              max="9999999999999999"
+              onkeydown="handleValidationForCardNumber()"
+            />
+          </div>
         </div>
         <br />
         <div>
@@ -43,46 +43,50 @@
         </div>
         <br />
         <div id="expiryDateAndMonthBox">
-        <div>
-          <label>CVV</label>
+          <div>
+            <label>CVV</label>
+            <br />
+            <br />
+            <input
+              type="password"
+              placeholder="CVV"
+              id="cvv"
+              class="cvvBox"
+              onkeydown="handleValidationForCvv()"
+            />
+          </div>
           <br />
+          <div>
+            <label>Expiry month</label>
+            <br />
+            <br />
+            <select id="expiryMonth">
+              <option value="01">01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+              <option value="05">05</option>
+              <option value="06">06</option>
+              <option value="07">07</option>
+              <option value="08">08</option>
+              <option value="09">09</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
           <br />
-          <input type="password" placeholder="CVV" id="cvv"  class="cvvBox"/>
+          <div>
+            <label>Expiry Year</label>
+            <br />
+            <br />
+            <select id="expiryYear"></select>
+          </div>
         </div>
         <br />
-        <div>
-          <label>Expiry month</label>
-          <br />
-          <br />
-          <select id="expiryMonth">
-            <option value="01">01</option>
-            <option value="02">02</option>
-            <option value="03">03</option>
-            <option value="04">04</option>
-            <option value="05">05</option>
-            <option value="06">06</option>
-            <option value="07">07</option>
-            <option value="08">08</option>
-            <option value="09">09</option>
-            <option value="10">10</option>
-            <option value="11">11</option>
-            <option value="12">12</option>
-          </select>
+        <div id="submitButtonBox">
+          <input type="submit" id="submitButton" value="Pay now" />
         </div>
-        <br />
-        <div>
-          <label>Expiry Year</label>
-          <br />
-          <br />
-          <select id="expiryYear"></select>
-        </div>
-    </div>
-        <br />
-       <div id="submitButtonBox">
-<input type="submit"  id="submitButton" value="Pay now"/>
-
-        </div>
-
       </form>
     </div>
   </body>

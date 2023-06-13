@@ -2,13 +2,12 @@
 
 function AddExpiryYearOption() {
   let expiryyear = document.getElementById("expiryYear");
-  let arr = new Array(100).fill(1);
-  arr.map((element, index) => {
+  for (let index = 0; index < 99; index++) {
     let option = document.createElement("option");
     option.value = 2023 + index;
     option.textContent = 2023 + index;
     expiryyear.append(option);
-  });
+  }
 }
 AddExpiryYearOption();
 
@@ -29,7 +28,7 @@ function handleSubmit() {
     expiryYear,
   };
 }
-
+//validation for card number
 function handleValidationForCardNumber() {
   let form = document.getElementById("form");
   let cardNumber = form.cardNumber.value;
@@ -43,4 +42,18 @@ function handleValidationForCardNumber() {
       event.preventDefault();
     }
   }
+}
+
+//validation for cvv
+
+function handleValidationForCvv(){
+  let form=document.getElementById("form")
+  let cvv=form.cvv.value;
+  console.log(event)
+if(event.keyCode!==8){
+  if(cvv.length===3)
+  {
+    event.preventDefault()
+  }
+}
 }
