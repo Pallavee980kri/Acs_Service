@@ -34,7 +34,9 @@
   color: aliceblue;
   background-color: gray;
   border: none;
+  cursor: pointer;
 }
+
 #submitButtonBox {
   height: 2rem;
   width: 9rem;

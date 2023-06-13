@@ -28,6 +28,7 @@
   border: none;
   border-radius: 5px;
   width: 8rem;
+  cursor: pointer;
 }
 .sendOtp {
   color: aliceblue;
@@ -35,6 +36,7 @@
   border: none;
   border-radius: 5px;
   width: 6rem;
+  cursor: pointer;
 }
 .otpText {
   height: 4rem;
