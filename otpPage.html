@@ -1,21 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./Styles/otpPage.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./Styles/otpPage.css" />
     <title>OTP</title>
-</head>
-<body>
-    <h1>OTP Page</h1>
-    <div>
+  </head>
+  <body>
+    <h1 class="otpText">OTP Page</h1>
+    <div class="container">
+      <div>
         <label>Enter OTP</label>
-        <input type="number" placeholder="enter OTP" id="otp">
+        <br />
+        <br />
+
+        <input
+          type="number"
+          placeholder="enter OTP"
+          id="otp"
+          class="inputbox"
+        />
+      </div>
+      <br>
+      <br>
+      <div class="otpBoxes">
+        
+        <button class="resendOtp">RESEND OTP</button>
+        <button class="sendOtp">Submit</button>
+      </div>
     </div>
-    <div>
-        <button>RESEND OTP</button>
-        <button>Submit </button>
-    </div>
-</body>
+  </body>
 </html>
 <script src="./Scripts/otpPage.js"></script>

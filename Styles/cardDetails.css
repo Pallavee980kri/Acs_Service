@@ -18,39 +18,32 @@
 .inputContainer {
   height: 2rem;
   width: 20rem;
-  
 }
-.cvvBox{
-    height: 1.5rem;
-    width: 4rem;
-    /* border: 1px solid red; */
+.cvvBox {
+  height: 1.5rem;
+  width: 4rem;
 }
-#expiryDateAndMonthBox{
-    display: flex;
-    justify-content: space-between;
-    
+#expiryDateAndMonthBox {
+  display: flex;
+  justify-content: space-between;
 }
-#submitButton{
-    height: 2rem;
-    width: 9rem;
-    /* border: 1px solid red; */
-    border-radius: 5px;
-    color: aliceblue;
-    background-color: gray;
-    border: none;
+#submitButton {
+  height: 2rem;
+  width: 9rem;
+  border-radius: 5px;
+  color: aliceblue;
+  background-color: gray;
+  border: none;
 }
-#submitButtonBox{
-    height: 2rem;
-    width: 9rem;
-    /* border: 1px solid red; */
-    margin: auto;
-    
+#submitButtonBox {
+  height: 2rem;
+  width: 9rem;
+  margin: auto;
 }
-.acsText{
-    height: 4rem;
-    width: 12rem;
-    margin: auto;
-    /* border: 1px solid red; */
-    font-size: 2rem;
-    font-weight: bold;
+.acsText {
+  height: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
 }
