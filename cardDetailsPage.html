@@ -1,30 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Card Details</title>
-    <link rel="stylesheet" href="./Styles/cardDetails.css">
- 
-</head>
-<body>
-    <h1>cardDetails</h1>
-    <form id="form" onsubmit="handleSubmit()">
-    <div>
-        <label>Card Number</label>
-        <input type="number" placeholder="XXXXXXXXXXXXXXXX" id="cardNumber">
-    </div>
-    <div>
-        <label>CardHolder Name</label>
-        <input type="text" placeholder="Enter Your Name" id="cardHolderName">
-    </div>
-    <div>
-        <label>CVV</label>
-        <input type="number" placeholder="Enter CVV" id="cvv">
-    </div>
-    <div>
-        <label>Expiry month</label>
-        <select id="expiryMonth">
+    <link rel="stylesheet" href="./Styles/cardDetails.css" />
+  </head>
+
+  <body>
+      <div class="acsText">
+        <p>ACS Service</p>
+      </div>
+    <div id="container">
+      <form id="form" onsubmit="handleSubmit()">
+        <div>
+          <label>Card Number</label>
+          <br />
+          <br />
+          <div class="inputContainer">
+          <input
+            type="number"
+            placeholder="XXXXXXXXXXXXXXXX"
+            id="cardNumber"
+            class="inputbox"
+            min="0"
+            max="9999999999999999"
+            onkeydown="handleValidationForCardNumber()"
+          />
+        </div>
+        </div>
+        <br />
+        <div>
+          <label>CardHolder Name</label>
+          <br />
+          <br />
+          <input
+            type="text"
+            placeholder="Name on card"
+            id="cardHolderName"
+            class="inputbox"
+          />
+        </div>
+        <br />
+        <div id="expiryDateAndMonthBox">
+        <div>
+          <label>CVV</label>
+          <br />
+          <br />
+          <input type="number" placeholder="CVV" id="cvv"  class="cvvBox"/>
+        </div>
+        <br />
+        <div>
+          <label>Expiry month</label>
+          <br />
+          <br />
+          <select id="expiryMonth">
             <option value="01">01</option>
             <option value="02">02</option>
             <option value="03">03</option>
@@ -37,14 +67,23 @@
             <option value="10">10</option>
             <option value="11">11</option>
             <option value="12">12</option>
-        </select>
+          </select>
+        </div>
+        <br />
+        <div>
+          <label>Expiry Year</label>
+          <br />
+          <br />
+          <select id="expiryYear"></select>
+        </div>
     </div>
-    <div>
-        <label>Expiry Year</label>
-        <select id="expiryYear"></select>
+        <br />
+       <div id="submitButtonBox">
+<input type="submit"  id="submitButton" placeholder="Pay Now"/>
+        </div>
+
+      </form>
     </div>
-    <input type="submit">
-    </form>
-</body>
+  </body>
 </html>
 <script src="./Scripts/cardDetails.js"></script>
