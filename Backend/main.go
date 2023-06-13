@@ -65,8 +65,6 @@ func createRandomNumber(w http.ResponseWriter,r *http.Request, db *sql.DB) {
     // Generate a random number using the new generator
     randomNum := rng.Intn(900000) + 100000
     fmt.Println(randomNum)
-    query := "INSERT INTO card_information (card_number, cardholder_name, cvv, expiry_month, expiry_year, random_number) VALUES (?, ?, ?, ?, ?, ?)"
-	_, err = db.Exec(query, card.CardNumber, card.CardholderName, card.CVV, card.ExpiryMonth, card.ExpiryYear, randomNum)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,6 +75,10 @@ func createRandomNumber(w http.ResponseWriter,r *http.Request, db *sql.DB) {
 	json.NewEncoder(w).Encode(card)
 }
 
+//match random number from the database with the string 
 func randomCheck(w http.ResponseWriter,r*http.Request){
-fmt.Println("hello")
+
+
+
+
 }
