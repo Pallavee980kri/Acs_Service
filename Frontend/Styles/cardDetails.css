@@ -36,7 +36,8 @@
   width: 9rem;
   border-radius: 5px;
   color: aliceblue;
-  background-color: gray;
+  background-color: purple;
+  opacity: 0.5;
   border: none;
   cursor: pointer;
 }
@@ -53,15 +54,15 @@
   align-items: center;
   width: auto;
 }
-#expiryMonth{
+#expiryMonth {
   height: 1.5rem;
-width: 3rem;
+  width: 3rem;
 }
-#expiryYear{
+#expiryYear {
   height: 1.5rem;
   width: 4rem;
 }
-.allInputFieldHeading{
+.allInputFieldHeading {
   font-weight: 600;
   font-family: sans-serif;
 }

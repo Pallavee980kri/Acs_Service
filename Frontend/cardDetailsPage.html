@@ -26,7 +26,9 @@
               min="0"
               max="9999999999999999"
               onkeydown="handleValidationForCardNumber()"
+              oninput="hanleCheckPayNowbuttonEnable()"
             />
+            <p id="cardNumberErrorMessage">Card Number Must Be Of 16 Digits</p>
           </div>
         </div>
         <br />
@@ -39,6 +41,8 @@
             placeholder="Name on card"
             id="cardHolderName"
             class="inputbox"
+            oninput="hanleCheckPayNowbuttonEnable()"
+
           />
         </div>
         <br />
@@ -53,6 +57,8 @@
               id="cvv"
               class="cvvBox"
               onkeydown="handleValidationForCvv()"
+              oninput="hanleCheckPayNowbuttonEnable()"
+
             />
           </div>
           <br />
