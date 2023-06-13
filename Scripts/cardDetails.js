@@ -46,14 +46,20 @@ function handleValidationForCardNumber() {
 
 //validation for cvv
 
-function handleValidationForCvv(){
-  let form=document.getElementById("form")
-  let cvv=form.cvv.value;
-  console.log(event)
-if(event.keyCode!==8){
-  if(cvv.length===3)
-  {
-    event.preventDefault()
+function handleValidationForCvv() {
+  let form = document.getElementById("form");
+  let cvv = form.cvv.value;
+  var key = event.key;
+  var numbers = "0123456789";
+  if (event.keyCode !== 8) {
+    if (!numbers.includes(key)) {
+      event.preventDefault();
+    }
   }
-}
+  if (event.keyCode !== 8) {
+    if (cvv.length === 3) {
+      event.preventDefault();
+    }
+  }
+
 }
