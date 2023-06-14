@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 )
 type Card struct {
+	ID              int    `json:"id"`
 	Card_number     string `json:"card_number"`
 	Cardholder_name string `json:"cardholder_name"`
 	CVV            string `json:"cvv"`
@@ -23,6 +24,7 @@ type Card struct {
 	Expiry_year     int    `json:"expiry_year"`
 	OTP   int    `json:"OTP"`
 }
+
 var db *sql.DB
 func connect()  error {
 	var err error
@@ -87,19 +89,24 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the card data exists in the database
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
-    log.Println("query",query)
+    log.Println("row",row)
+	log.Println("query",query)
 	var storedCard Card
-	
-	err = row.Scan(
-		&storedCard.Card_number,
-		&storedCard.Cardholder_name,
-		&storedCard.CVV,
-		&storedCard.Expiry_month,
-		&storedCard.Expiry_year,
-		&storedCard.OTP,
-		&storedCard.OTP, // Add this line to match the number of fields in the struct
+	// var expiryMonth, expiryYear string
+	// var id int
+var otpValue sql.NullInt64
+err = row.Scan(
+    // &id,
+	&card.ID,
+    &storedCard.Card_number,
+    &storedCard.Cardholder_name,
+    &storedCard.CVV,
+    &storedCard.Expiry_month,
+    &storedCard.Expiry_year,
+    &otpValue,
+)
 
-	)
+	
 	if err == sql.ErrNoRows {
 		// Card data not found in the database
 		log.Println("Error in card data founding:", err)
@@ -111,8 +118,19 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to query the database", http.StatusInternalServerError)
 		return
 	}
+	log.Println("Card ID:", card.ID)
 
-	
+	log.Println("storedcard",storedCard)
+	log.Println("Stored Card Number:", storedCard.Card_number)
+	log.Println("Stored Cardholder Name:", storedCard.Cardholder_name)
+	log.Println("Frontend Card Number:", card.Card_number)
+	log.Println("Frontend Cardholder Name:", card.Cardholder_name)
+	log.Println("Frontend CVV:", card.CVV)
+	log.Println("Stored CVV:", storedCard.CVV)
+	log.Println("Frontend Expiry Month:", card.Expiry_month)
+	log.Println("Stored Expiry Month:", storedCard.Expiry_month)
+	log.Println("Frontend Expiry Year:", card.Expiry_year)
+	log.Println("Stored Expiry Year:", storedCard.Expiry_year)
 
 	// Compare the stored card data with the frontend data
 	if card.CVV != storedCard.CVV || card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
