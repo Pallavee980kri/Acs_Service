@@ -16,30 +16,32 @@ import (
 	"github.com/gorilla/mux"
 )
 type Card struct {
-	CardNumber     string `json:"cardNumber"`
-	CardholderName string `json:"cardHolderName"`
+	Card_number     string `json:"card_number"`
+	Cardholder_name string `json:"cardholder_name"`
 	CVV            string `json:"cvv"`
-	ExpiryMonth    int    `json:"expiryMonth"`
-	ExpiryYear     int    `json:"expiryYear"`
+	Expiry_month    int    `json:"expiry_month"`
+	Expiry_year     int    `json:"expiry_year"`
 	OTP   int    `json:"OTP"`
 }
-
-func connect() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "root:pall850@/acsservice")
+var db *sql.DB
+func connect()  error {
+	var err error
+	db, err = sql.Open("mysql", "root:pall850@/acsservice")
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
    // Test the database connection
 	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping database: %v", err)
+		return  fmt.Errorf("failed to ping database: %v", err)
 	}
-    fmt.Println("Database connected successfully!")
-    return db, nil
+	log.Println("Database connected successfully!")
+
+    return  nil
 }
 func main() {
 	// Connect to the database
-	db, err := connect()
+	err := connect()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,9 +51,9 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8000", router))
 }
-
+//access card data from the frontend
 func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	var card Card
 	err := json.NewDecoder(r.Body).Decode(&card)
@@ -63,24 +65,62 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Received card data: %+v\n", card)
 
-	if card.CardholderName == "" {
+	if card.Card_number == "" {
 		http.Error(w, "Card holder name is required", http.StatusBadRequest)
 		return
 	}
-	if card.CardNumber == "" || len(card.CardNumber) != 16 {
+	if card.Card_number == "" || len(card.Card_number) != 16 {
         http.Error(w,"Card number is required and must be 16 digits Please enter valid card number",http.StatusBadRequest)
 		return
 	}
 
-	if(card.CVV=="" || len(card.CVV)>3){
+	if(card.CVV=="" || len(card.CVV)!=3){
 		http.Error(w,"CVV is required Please enter valid 3 digits cvv number",http.StatusBadRequest)
 		return
 	}
 
-	if(card.ExpiryMonth==0||card.ExpiryYear==0){
+	if(card.Expiry_month==0||card.Expiry_year==0){
 		http.Error(w,"Expiry month and year are required",http.StatusBadRequest)
 		return
 	}
+
+	// Check if the card data exists in the database
+	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
+	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
+    log.Println("query",query)
+	var storedCard Card
+	
+	err = row.Scan(
+		&storedCard.Card_number,
+		&storedCard.Cardholder_name,
+		&storedCard.CVV,
+		&storedCard.Expiry_month,
+		&storedCard.Expiry_year,
+		&storedCard.OTP,
+		&storedCard.OTP, // Add this line to match the number of fields in the struct
+
+	)
+	if err == sql.ErrNoRows {
+		// Card data not found in the database
+		log.Println("Error in card data founding:", err)
+
+		http.Error(w, "Card data not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Println("Error querying the database:", err)
+		http.Error(w, "Failed to query the database", http.StatusInternalServerError)
+		return
+	}
+
+	
+
+	// Compare the stored card data with the frontend data
+	if card.CVV != storedCard.CVV || card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
+		http.Error(w, "Card data does not match", http.StatusBadRequest)
+		return
+	}
+
+
 	// Send a response back to the frontend
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Payment processed successfully"))
