@@ -21,7 +21,7 @@ type Card struct {
 	CVV            string `json:"cvv"`
 	ExpiryMonth    int    `json:"expiryMonth"`
 	ExpiryYear     int    `json:"expiryYear"`
-	RandomNumber   int    `json:"randomNumber"`
+	OTP   int    `json:"OTP"`
 }
 
 func connect() (*sql.DB, error) {
@@ -54,7 +54,6 @@ func main() {
 
 func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	var card Card
-	fmt.Println(card)
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
@@ -63,20 +62,24 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Received card data: %+v\n", card)
+
 	if card.CardholderName == "" {
 		http.Error(w, "Card holder name is required", http.StatusBadRequest)
 		return
 	}
-	if(card.CardNumber==""){
-		http.Error(w,"Card number is required",http.StatusBadRequest)
+	if card.CardNumber == "" || len(card.CardNumber) != 16 {
+        http.Error(w,"Card number is required and must be 16 digits Please enter valid card number",http.StatusBadRequest)
+		return
 	}
 
-	if(card.CVV==""){
-		http.Error(w,"CVV is required",http.StatusBadRequest)
+	if(card.CVV=="" || len(card.CVV)>3){
+		http.Error(w,"CVV is required Please enter valid 3 digits cvv number",http.StatusBadRequest)
+		return
 	}
 
 	if(card.ExpiryMonth==0||card.ExpiryYear==0){
 		http.Error(w,"Expiry month and year are required",http.StatusBadRequest)
+		return
 	}
 	// Send a response back to the frontend
 	w.WriteHeader(http.StatusOK)
