@@ -1,24 +1,29 @@
 package main
+
 import (
 	"database/sql"
 	"encoding/json"
+
+	// "encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
+
+	// "math/rand"
 	"net/http"
-	"time"
+	// "time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 type Card struct {
-	CardNumber     int    `json:"card_number"`
-	CardholderName string `json:"cardholder_name"`
-	CVV            int    `json:"cvv"`
-	ExpiryMonth    int    `json:"expiry_month"`
-	ExpiryYear     int    `json:"expiry_year"`
-	RandomNumber   int    `json:"random_number"`
+	CardNumber     string `json:"cardNumber"`
+	CardholderName string `json:"cardHolderName"`
+	CVV            string `json:"cvv"`
+	ExpiryMonth    int    `json:"expiryMonth"`
+	ExpiryYear     int    `json:"expiryYear"`
+	RandomNumber   int    `json:"randomNumber"`
 }
+
 func connect() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:pall850@/acsservice")
 	if err != nil {
@@ -42,43 +47,38 @@ func main() {
 	defer db.Close()
     // Initialize the router
 	router := mux.NewRouter()
-    // Define the API endpoint to save the card details
-	router.HandleFunc("/random-number", func(w http.ResponseWriter, r *http.Request) {
-		createRandomNumber(w, r, db)
-	}).Methods("POST")
-    router.HandleFunc("/random-check",randomCheck).Methods("GET")
-    // Start the server
-	fmt.Println("Server started on port 8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
-		log.Fatal(err)
-	}
+
+	router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
-func createRandomNumber(w http.ResponseWriter,r *http.Request, db *sql.DB) {
+
+func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	var card Card
+	fmt.Println(card)
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println("Error parsing JSON payload:", err)
+		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
 		return
 	}
-    // Create a new random number generator with a specific seed
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-    // Generate a random number using the new generator
-    randomNum := rng.Intn(900000) + 100000
-    fmt.Println(randomNum)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	log.Printf("Received card data: %+v\n", card)
+	if card.CardholderName == "" {
+		http.Error(w, "Card holder name is required", http.StatusBadRequest)
 		return
 	}
-    // Respond with the card details and random number
-	card.RandomNumber = randomNum
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(card)
-}
+	if(card.CardNumber==""){
+		http.Error(w,"Card number is required",http.StatusBadRequest)
+	}
 
-//match random number from the database with the string 
-func randomCheck(w http.ResponseWriter,r*http.Request){
+	if(card.CVV==""){
+		http.Error(w,"CVV is required",http.StatusBadRequest)
+	}
 
-
-
-
+	if(card.ExpiryMonth==0||card.ExpiryYear==0){
+		http.Error(w,"Expiry month and year are required",http.StatusBadRequest)
+	}
+	// Send a response back to the frontend
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Payment processed successfully"))
 }
