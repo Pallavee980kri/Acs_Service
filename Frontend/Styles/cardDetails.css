@@ -66,3 +66,8 @@
   font-weight: 600;
   font-family: sans-serif;
 }
+#cardNumberErrorMessage{
+  font-size: 12px;
+  color: red;
+  margin-top: -1rem;
+}
