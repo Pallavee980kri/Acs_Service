@@ -89,13 +89,9 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the card data exists in the database
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
-    log.Println("row",row)
-	log.Println("query",query)
-	var storedCard Card
-	// var expiryMonth, expiryYear string
-	// var id int
-var otpValue sql.NullInt64
-err = row.Scan(
+    var storedCard Card
+	var otpValue sql.NullInt64
+    err = row.Scan(
     // &id,
 	&card.ID,
     &storedCard.Card_number,
@@ -120,17 +116,17 @@ err = row.Scan(
 	}
 	log.Println("Card ID:", card.ID)
 
-	log.Println("storedcard",storedCard)
-	log.Println("Stored Card Number:", storedCard.Card_number)
-	log.Println("Stored Cardholder Name:", storedCard.Cardholder_name)
-	log.Println("Frontend Card Number:", card.Card_number)
-	log.Println("Frontend Cardholder Name:", card.Cardholder_name)
-	log.Println("Frontend CVV:", card.CVV)
-	log.Println("Stored CVV:", storedCard.CVV)
-	log.Println("Frontend Expiry Month:", card.Expiry_month)
-	log.Println("Stored Expiry Month:", storedCard.Expiry_month)
-	log.Println("Frontend Expiry Year:", card.Expiry_year)
-	log.Println("Stored Expiry Year:", storedCard.Expiry_year)
+	// log.Println("storedcard",storedCard)
+	// log.Println("Stored Card Number:", storedCard.Card_number)
+	// log.Println("Stored Cardholder Name:", storedCard.Cardholder_name)
+	// log.Println("Frontend Card Number:", card.Card_number)
+	// log.Println("Frontend Cardholder Name:", card.Cardholder_name)
+	// log.Println("Frontend CVV:", card.CVV)
+	// log.Println("Stored CVV:", storedCard.CVV)
+	// log.Println("Frontend Expiry Month:", card.Expiry_month)
+	// log.Println("Stored Expiry Month:", storedCard.Expiry_month)
+	// log.Println("Frontend Expiry Year:", card.Expiry_year)
+	// log.Println("Stored Expiry Year:", storedCard.Expiry_year)
 
 	// Compare the stored card data with the frontend data
 	if card.CVV != storedCard.CVV || card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
