@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	// "time"
+	"math/rand"
+
 	// "encoding/json"
 	"fmt"
 	"log"
@@ -134,8 +137,30 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate OTP
+otp := generateOTP()
 
+// Update the OTP in the database
+updateQuery := "UPDATE card_information SET OTP = ? WHERE id = ?"
+_, err = db.Exec(updateQuery, otp, storedCard.ID)
+if err != nil {
+    log.Println("Error updating OTP in the database:", err)
+    http.Error(w, "Failed to update OTP in the database", http.StatusInternalServerError)
+    return
+}
+
+log.Println("OTP",otp)
 	// Send a response back to the frontend
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OTP added successfully"))
 	w.Write([]byte("Payment processed successfully"))
+}
+
+// Function to generate a random OTP
+
+func generateOTP() int {
+
+	otp := rand.Intn(900000) + 100000
+	return otp
+
 }
