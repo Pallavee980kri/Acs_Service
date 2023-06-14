@@ -53,6 +53,7 @@ func main() {
 //access card data from the frontend
 func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	var card Card
+	var errorMessages []string//creating a slice
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
@@ -65,7 +66,6 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//validation for card number 
-		var errorMessages []string//creating a slice
 if card.Card_number == "" {
 	errorMessages = append(errorMessages, "Card number is required.")
 }
@@ -158,7 +158,7 @@ func generateOTP() int {
 	return otp
 
 }
-//validation for card number of -+e and space character
+//validation for card number of -+e and space character with regexp
 // func containsInvalidCharsInCardNumber(cardNumber string) bool {
 	// regex := regexp.MustCompile(`[-+e\s]`)
 	// return regex.MatchString(cardNumber)
