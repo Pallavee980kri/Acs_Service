@@ -21,9 +21,26 @@ type Card struct {
 	CVV            string `json:"cvv"`
 	Expiry_month    int    `json:"expiry_month"`
 	Expiry_year     int    `json:"expiry_year"`
-	OTP             int    `json:"OTP"`
+	OTP             NullInt64    `json:"OTP"`
 }
 // var otpValue sql.NullInt64
+
+
+type NullInt64 struct {
+	sql.NullInt64
+}
+
+func (ni *NullInt64) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		ni.Valid = false
+		return nil
+	}
+	err := json.Unmarshal(data, &ni.Int64)
+	if err == nil {
+		ni.Valid = true
+	}
+	return err
+}
 
 var db *sql.DB
 var card Card
@@ -163,6 +180,11 @@ func generateOTP() int {
 	return otp
 
 }
+
+
+
+
+
 //validation for card number of -+e and space character with regexp
 // func containsInvalidCharsInCardNumber(cardNumber string) bool {
 	// regex := regexp.MustCompile(`[-+e\s]`)
@@ -194,7 +216,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if storedOTP.Valid && card.OTP == int(storedOTP.Int64) {
+	if storedOTP.Valid && int(card.OTP.Int64 )== int(storedOTP.Int64) {
 		log.Println("OTP matched successfully")
 	} else {
 		log.Println("Invalid OTP provided")
