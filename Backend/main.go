@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+
 	// "regexp"
 	"strings"
 
@@ -20,9 +21,11 @@ type Card struct {
 	CVV            string `json:"cvv"`
 	Expiry_month    int    `json:"expiry_month"`
 	Expiry_year     int    `json:"expiry_year"`
-	OTP   int    `json:"OTP"`
+	OTP             int    `json:"OTP"`
 }
+var otpValue sql.NullInt64
 var db *sql.DB
+var card Card
 func connect()  error {
 	var err error
 	db, err = sql.Open("mysql", "root:pall850@/acsservice")
@@ -48,11 +51,12 @@ func main() {
     // Initialize the router
 	router := mux.NewRouter()
     router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
+	router.HandleFunc("/match_otp",matchOTP).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
-//access card data from the frontend
+//API for access card data from the frontend and match this with that database if it matches then generate OTP if not then 
+//give a proper message.
 func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
-	var card Card
 	var errorMessages []string//creating a slice
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -109,7 +113,6 @@ if len(errorMessages) > 0 {
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
     var storedCard Card
-	var otpValue sql.NullInt64
     err = row.Scan(
     // &id,
 	&card.ID,
@@ -163,3 +166,36 @@ func generateOTP() int {
 	// regex := regexp.MustCompile(`[-+e\s]`)
 	// return regex.MatchString(cardNumber)
 // }
+
+
+// match otp from the logger from the frontend otp
+
+// Match the OTP received from the frontend with the logger OTP
+func matchOTP(w http.ResponseWriter, r *http.Request) {
+	err := json.NewDecoder(r.Body).Decode(&card)
+	if err != nil {
+		log.Println("Error parsing JSON payload:", err)
+		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
+		return
+	}
+
+	myotp := card.OTP
+	if myotp== int(otpValue.Int64){
+log.Println("opt matched success")
+	}
+	
+
+	
+
+	log.Println("Invalid OTP provided")
+	http.Error(w, "Invalid OTP", http.StatusBadRequest)
+		
+		
+		// fmt.Println("Received OTP:", myotp)
+		
+	// w.Write([]byte("OTP received successfully"))
+}
+
+
+
+
