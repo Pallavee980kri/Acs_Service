@@ -23,7 +23,8 @@ type Card struct {
 	Expiry_year     int    `json:"expiry_year"`
 	OTP             int    `json:"OTP"`
 }
-var otpValue sql.NullInt64
+// var otpValue sql.NullInt64
+
 var db *sql.DB
 var card Card
 func connect()  error {
@@ -115,13 +116,14 @@ if len(errorMessages) > 0 {
     var storedCard Card
     err = row.Scan(
     // &id,
-	&card.ID,
+	&storedCard.ID,
     &storedCard.Card_number,
     &storedCard.Cardholder_name,
     &storedCard.CVV,
     &storedCard.Expiry_month,
     &storedCard.Expiry_year,
-    &otpValue,
+    // &otpValue,
+	&storedCard.OTP,
 )
     if err == sql.ErrNoRows {
 		// Card data not found in the database
@@ -168,7 +170,7 @@ func generateOTP() int {
 // }
 
 
-// match otp from the logger from the frontend otp
+
 
 // Match the OTP received from the frontend with the logger OTP
 func matchOTP(w http.ResponseWriter, r *http.Request) {
@@ -178,23 +180,31 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
 		return
 	}
-
-	myotp := card.OTP
-	if myotp== int(otpValue.Int64){
-log.Println("opt matched success")
+	query := "SELECT OTP FROM card_information WHERE id = ?"
+	row := db.QueryRow(query, card.ID)
+	var storedOTP sql.NullInt64
+	err = row.Scan(&storedOTP)
+	if err == sql.ErrNoRows {
+		log.Println("No OTP found for the given ID:", card.ID)
+		http.Error(w, "No OTP found", http.StatusNotFound)
+		return
+	}else if err != nil {
+		log.Println("Error retrieving OTP from the database:", err)
+		http.Error(w, "Failed to retrieve OTP from the database", http.StatusInternalServerError)
+		return
 	}
-	
 
-	
+	if storedOTP.Valid && card.OTP == int(storedOTP.Int64) {
+		log.Println("OTP matched successfully")
+	} else {
+		log.Println("Invalid OTP provided")
+		http.Error(w, "Invalid OTP", http.StatusBadRequest)
+		return
+	}
 
-	log.Println("Invalid OTP provided")
-	http.Error(w, "Invalid OTP", http.StatusBadRequest)
-		
-		
-		// fmt.Println("Received OTP:", myotp)
-		
-	// w.Write([]byte("OTP received successfully"))
+	w.Write([]byte("OTP matched successfully"))
 }
+
 
 
 
