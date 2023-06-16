@@ -18,23 +18,38 @@ const AddExpiryYearOption = () => {
 };
 AddExpiryYearOption();
 
-const handleSubmit = () => {
-  event.preventDefault();
+const handleSubmit = async () => {
+  try {
+    event.preventDefault();
 
-  let form = document.getElementById("form");
-  let card_number = form.card_number.value;
-  let cardHolderName = form.cardHolderName.value;
-  let cvv = form.cvv.value;
-  let expiryMonth = form.expiryMonth.value;
-  let expiryYear = form.expiryYear.value;
-  let formContent = {
-    card_number,
-    cardHolderName,
-    cvv,
-    expiryMonth,
-    expiryYear,
-  };
-  console.log(formContent);
+    let form = document.getElementById("form");
+    let card_number = form.card_number.value;
+    let cardHolderName = form.cardHolderName.value;
+    let cvv = form.cvv.value;
+    let expiryMonth = +form.expiryMonth.value;
+    let expiryYear = +form.expiryYear.value;
+    let formContent = {
+      card_number: card_number,
+      cardholder_name: cardHolderName,
+      cvv: cvv,
+      expiry_month: expiryMonth,
+      expiry_year: expiryYear,
+    };
+    console.log(formContent);
+
+    let res = await fetch("http://localhost:8000/process_payment", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(formContent),
+    });
+    let data = await res.json();
+    console.log(data);
+    console.log(res);
+  } catch (err) {
+    console.log(err);
+  }
 };
 //validation for card number
 const handleValidationForCardNumber = () => {

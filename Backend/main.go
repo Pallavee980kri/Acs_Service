@@ -14,6 +14,7 @@ import (
 	"strings"
 	// "time"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 type Card struct {
@@ -26,6 +27,10 @@ type Card struct {
 	OTP             int    `json:"OTP"`
 	// Expiry          sql.NullTime `json:"expiry"`
 }
+
+
+
+
 // var otpValue sql.NullInt64
 
 
@@ -48,6 +53,7 @@ type Card struct {
 var storedCard Card
 var db *sql.DB
 var card Card
+// var jsonResp []byte
 func connect()  error {
 	var err error
 	db, err = sql.Open("mysql", "root:pall850@/acsservice")
@@ -75,11 +81,29 @@ func main() {
     router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
 	router.HandleFunc("/match_otp",matchOTP).Methods("POST")
 	router.HandleFunc("/resend_otp",resendOTP).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	//  // Define your request handler
+	//  handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    //     // Your request handling logic here
+    // })
+
+    // Wrap the handler with the CORS middleware
+    // corsHandler := handleCORS(handler)
+
+    // Register the handler with the router
+    // router.Handle("/", corsHandler)
+	http.ListenAndServe(":8000",
+	
+handlers.CORS(
+	handlers.AllowedOrigins([]string{"*"}),
+	handlers.AllowedMethods([]string{"GET","POST"}),
+	handlers.AllowedHeaders([]string{"X-Requested-With","Content-Type","Authorization"}),
+)(router))
 }
 //API for access card data from the frontend and match this with that database if it matches then generate OTP if not then 
 //give a proper message.
 func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
+
+	
 	var errorMessages []string//creating a slice
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -128,10 +152,10 @@ if len(errorMessages) > 0 {
 		http.Error(w,"CVV is required Please enter valid 3 digits cvv number",http.StatusBadRequest)
 		return
 	}
-    if(card.Expiry_month==0||card.Expiry_year==0){
-		http.Error(w,"Expiry month and year are required",http.StatusBadRequest)
-		return
-	}
+    // if(card.Expiry_month==0||card.Expiry_year==0){
+	// 	http.Error(w,"Expiry month and year are required",http.StatusBadRequest)
+	// 	return
+	// }
     // Check if the card data exists in the database
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
@@ -186,7 +210,17 @@ if len(errorMessages) > 0 {
 	// fmt.Println("OTP deleted from the database")
 	// Send a response back to the frontend
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OTP added successfully AND Payment processed successfully"))
+	// w.Write([]byte("OTP added successfully AND Payment processed successfully"))
+	// json.NewEncoder(w).Encode("OTP added success")
+	w.Header().Set("Content-Type", "application/json")
+	resp := make(map[string]string)
+	resp["message"] = "OTP added successfully"
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+	}
+	w.Write(jsonResp)
+	
 }
 
 // Function to generate a random OTP
@@ -278,3 +312,5 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OTP resent successfully"))
 }
+
+
