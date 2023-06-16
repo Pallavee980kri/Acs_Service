@@ -22,13 +22,13 @@ const handleSubmit = () => {
   event.preventDefault();
 
   let form = document.getElementById("form");
-  let cardNumber = form.cardNumber.value;
+  let card_number = form.card_number.value;
   let cardHolderName = form.cardHolderName.value;
   let cvv = form.cvv.value;
   let expiryMonth = form.expiryMonth.value;
   let expiryYear = form.expiryYear.value;
   let formContent = {
-    cardNumber,
+    card_number,
     cardHolderName,
     cvv,
     expiryMonth,
@@ -39,7 +39,7 @@ const handleSubmit = () => {
 //validation for card number
 const handleValidationForCardNumber = () => {
   let form = document.getElementById("form");
-  let cardNumber = form.cardNumber.value;
+  let card_number = form.card_number.value;
 
   if (
     event.keyCode == 69 ||
@@ -56,11 +56,11 @@ const handleValidationForCardNumber = () => {
     event.keyCode !== 39 &&
     event.keyCode !== 46
   ) {
-    if (cardNumber.length === 16) {
+    if (card_number.length === 16) {
       event.preventDefault();
     }
   }
-  if (cardNumber.length == 16) {
+  if (card_number.length == 16) {
     let cardNumberErrorMessage = document.getElementById(
       "cardNumberErrorMessage"
     );
@@ -106,11 +106,11 @@ const handleValidationForCvv = () => {
 
 const hanleCheckPayNowbuttonEnable = () => {
   let form = document.getElementById("form");
-  let cardNumber = form.cardNumber.value;
+  let card_number = form.card_number.value;
   let cardHolderName = form.cardHolderName.value;
   let cvv = form.cvv.value;
   if (
-    cardNumber.length == 16 &&
+    card_number.length == 16 &&
     cardHolderName.length != 0 &&
     cvv.length == 3
   ) {

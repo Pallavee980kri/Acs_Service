@@ -8,9 +8,11 @@ import (
 	"math/rand"
 	"net/http"
 
+	// "time"
+
 	// "regexp"
 	"strings"
-
+	// "time"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -21,27 +23,29 @@ type Card struct {
 	CVV            string `json:"cvv"`
 	Expiry_month    int    `json:"expiry_month"`
 	Expiry_year     int    `json:"expiry_year"`
-	OTP             NullInt64    `json:"OTP"`
+	OTP             int    `json:"OTP"`
+	// Expiry          sql.NullTime `json:"expiry"`
 }
 // var otpValue sql.NullInt64
 
 
-type NullInt64 struct {
-	sql.NullInt64
-}
+// type NullInt64 struct {
+// 	sql.NullInt64
+// }
 
-func (ni *NullInt64) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		ni.Valid = false
-		return nil
-	}
-	err := json.Unmarshal(data, &ni.Int64)
-	if err == nil {
-		ni.Valid = true
-	}
-	return err
-}
+// func (ni *NullInt64) UnmarshalJSON(data []byte) error {
+// 	if string(data) == "null" {
+// 		ni.Valid = false
+// 		return nil
+// 	}
+// 	err := json.Unmarshal(data, &ni.Int64)
+// 	if err == nil {
+// 		ni.Valid = true
+// 	}
+// 	return err
+// }
 
+var storedCard Card
 var db *sql.DB
 var card Card
 func connect()  error {
@@ -70,6 +74,7 @@ func main() {
 	router := mux.NewRouter()
     router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
 	router.HandleFunc("/match_otp",matchOTP).Methods("POST")
+	router.HandleFunc("/resend_otp",resendOTP).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 //API for access card data from the frontend and match this with that database if it matches then generate OTP if not then 
@@ -130,7 +135,6 @@ if len(errorMessages) > 0 {
     // Check if the card data exists in the database
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
-    var storedCard Card
     err = row.Scan(
     // &id,
 	&storedCard.ID,
@@ -141,6 +145,7 @@ if len(errorMessages) > 0 {
     &storedCard.Expiry_year,
     // &otpValue,
 	&storedCard.OTP,
+	// &storedCard.Expiry,
 )
     if err == sql.ErrNoRows {
 		// Card data not found in the database
@@ -161,14 +166,24 @@ if len(errorMessages) > 0 {
     // Generate OTP
     otp := generateOTP()
     // Update the OTP in the database
-    updateQuery := "UPDATE card_information SET OTP = ? WHERE id = ?"
-    _, err = db.Exec(updateQuery, otp, card.ID)
+	// updateQuery := "UPDATE card_information SET OTP = ?, WHERE id = ?"
+	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
+
+	
+	// expiry := time.Now().Add(1 * time.Minute)
+	// _, err = db.Exec(updateQuery, otp,card.ID)
+	_, err = db.Exec(updateQuery, otp, storedCard.ID)
+
     if err != nil {
     log.Println("Error updating OTP in the database:", err)
     http.Error(w, "Failed to update OTP in the database", http.StatusInternalServerError)
     return
 }
     log.Println("OTP:",otp)
+	// Schedule the deletion of OTP after the expiry time
+	// time.Sleep(1 * time.Minute)
+	// deleteOTPFromDatabase(db, card.ID)
+	// fmt.Println("OTP deleted from the database")
 	// Send a response back to the frontend
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OTP added successfully AND Payment processed successfully"))
@@ -180,7 +195,15 @@ func generateOTP() int {
 	return otp
 
 }
+// func deleteOTPFromDatabase(db *sql.DB, cardID int) {
+// 	deleteQuery := "UPDATE card_information SET OTP = NULL, WHERE id = ?"
+// 	_, err := db.Exec(deleteQuery, cardID)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
+// 	fmt.Println("OTP deleted from the database")
+// }
 
 
 
@@ -216,7 +239,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if storedOTP.Valid && int(card.OTP.Int64 )== int(storedOTP.Int64) {
+	if storedOTP.Valid && int(card.OTP)== int(storedOTP.Int64) {
 		log.Println("OTP matched successfully")
 	} else {
 		log.Println("Invalid OTP provided")
@@ -231,3 +254,76 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 
 
 
+
+// func resendOTP(w http.ResponseWriter, r *http.Request) {
+	
+	
+// 	// Generate a new OTP
+// 	otp := generateOTP()
+
+// 	// Update the OTP in the database
+// 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
+// 	_, err := db.Exec(updateQuery, otp, storedCard.ID)
+// 	if err != nil {
+// 		log.Println("Error resending the OTP in the database:", err)
+// 		http.Error(w, "Failed to resend OTP in the database", http.StatusInternalServerError)
+// 		return
+// 	}
+// log.Println("storedCard",storedCard.ID)
+// 	log.Println("OTP:", otp)
+// 	w.WriteHeader(http.StatusOK)
+// 	w.Write([]byte("OTP resent successfully"))
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func resendOTP(w http.ResponseWriter, r *http.Request) {
+	// Extract the card number from the request
+	cardNumber :=storedCard.Card_number
+
+	// Query the database for the card information based on the card number
+	query := "SELECT ID FROM card_information WHERE card_number = ?"
+	row := db.QueryRow(query, cardNumber)
+
+	var cardID int
+	err := row.Scan(&cardID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println("No card information found for the provided card number")
+			http.Error(w, "No card information found", http.StatusNotFound)
+			return
+		}
+
+		log.Println("Error retrieving card information:", err)
+		http.Error(w, "Failed to retrieve card information", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate a new OTP
+	otp := generateOTP()
+
+	// Update the OTP in the database
+	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
+	_, err = db.Exec(updateQuery, otp, storedCard.ID)
+	if err != nil {
+		log.Println("Error resending the OTP in the database:", err)
+		http.Error(w, "Failed to resend OTP in the database", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("storedcard ID:", storedCard.ID)
+	log.Println("OTP:", otp)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OTP resent successfully"))
+}
