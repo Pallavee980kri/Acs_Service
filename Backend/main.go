@@ -25,7 +25,7 @@ type Card struct {
 	Expiry_month    int    `json:"expiry_month"`
 	Expiry_year     int    `json:"expiry_year"`
 	OTP             int    `json:"OTP"`
-	// Expiry          sql.NullTime `json:"expiry"`
+	Count           int    `json:"count"`
 }
 
 
@@ -170,6 +170,7 @@ if len(errorMessages) > 0 {
     // &otpValue,
 	&storedCard.OTP,
 	// &storedCard.Expiry,
+	&storedCard.Count,
 )
     if err == sql.ErrNoRows {
 		// Card data not found in the database
@@ -275,6 +276,40 @@ func generateOTP() int {
 
 
 // Match the OTP received from the frontend with the logger OTP
+// func matchOTP(w http.ResponseWriter, r *http.Request) {
+// 	err := json.NewDecoder(r.Body).Decode(&card)
+// 	if err != nil {
+// 		log.Println("Error parsing JSON payload:", err)
+// 		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
+// 		return
+// 	}
+// 	query := "SELECT OTP FROM card_information WHERE Card_number = ?"
+// 	row := db.QueryRow(query, card.Card_number)
+// 	var storedOTP sql.NullInt64
+// 	err = row.Scan(&storedOTP)
+// 	if err == sql.ErrNoRows {
+// 		log.Println("No OTP found for the given card_number:", card.Card_number)
+// 		http.Error(w, "No OTP found", http.StatusNotFound)
+// 		return
+// 	}else if err != nil {
+// 		log.Println("Error retrieving OTP from the database:", err)
+// 		http.Error(w, "Failed to retrieve OTP from the database", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	if storedOTP.Valid && int(card.OTP)== int(storedOTP.Int64) {
+// 		log.Println("OTP matched successfully")
+
+// 	} else {
+// 		log.Println("Invalid OTP provided")
+// 		http.Error(w, "Invalid OTP", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	w.Write([]byte("OTP matched successfully"))
+// }
+
+
 func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -282,22 +317,40 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
 		return
 	}
-	query := "SELECT OTP FROM card_information WHERE Card_number = ?"
+
+	query := "SELECT OTP, count FROM card_information WHERE Card_number = ?"
 	row := db.QueryRow(query, card.Card_number)
 	var storedOTP sql.NullInt64
-	err = row.Scan(&storedOTP)
+	var count int
+	err = row.Scan(&storedOTP, &count)
 	if err == sql.ErrNoRows {
-		log.Println("No OTP found for the given ID:", card.ID)
+		log.Println("No OTP found for the given card_number:", card.Card_number)
 		http.Error(w, "No OTP found", http.StatusNotFound)
 		return
-	}else if err != nil {
+	} else if err != nil {
 		log.Println("Error retrieving OTP from the database:", err)
 		http.Error(w, "Failed to retrieve OTP from the database", http.StatusInternalServerError)
 		return
 	}
 
-	if storedOTP.Valid && int(card.OTP)== int(storedOTP.Int64) {
-		log.Println("OTP matched successfully")
+	if storedOTP.Valid && int(card.OTP) == int(storedOTP.Int64) {
+		if count >= 3 {
+			log.Println("OTP matched maximum number of times")
+			http.Error(w, "OTP matched maximum number of times", http.StatusForbidden)
+			return
+		}
+
+		count++
+		// Update the count in the database
+		updateQuery := "UPDATE card_information SET count = ? WHERE Card_number = ?"
+		_, err := db.Exec(updateQuery, count, card.Card_number)
+		if err != nil {
+			log.Println("Error updating OTP count:", err)
+			http.Error(w, "Failed to update OTP count", http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("OTP matched successfully. Count:", count)
 	} else {
 		log.Println("Invalid OTP provided")
 		http.Error(w, "Invalid OTP", http.StatusBadRequest)
@@ -306,6 +359,17 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("OTP matched successfully"))
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //API for resend the OTP
 func resendOTP(w http.ResponseWriter, r *http.Request) {
