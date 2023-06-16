@@ -1,6 +1,7 @@
 //validation for the OTP
 function handleValidationForOtp() {
   let otp = event.target.value;
+  console.log(otp)
   if (event.keyCode == 69 || event.keyCode == 187 || event.keyCode == 190) {
     event.preventDefault();
   }
@@ -10,4 +11,4 @@ function handleValidationForOtp() {
     }
   }
 }
-handleValidationForOtp();
+// handleValidationForOtp();

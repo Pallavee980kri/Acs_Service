@@ -1,7 +1,12 @@
 //creating options for Expiry Year
 var payNowButtonFlag = false;
 var cardNumberValidFlag = true;
-
+var errorMessage = "";
+var cardHolderNameFlag = true;
+document.getElementById("cardHolderNameErrorMessage").style.display = "none";
+document.getElementById("errorMessageForCvv").style.display = "none";
+let showErrorMessage = document.getElementById("showErrorMessage");
+showErrorMessage.textContent = errorMessage;
 let submitButton = document.getElementById("submitButton");
 let cardNumberErrorMessage = document.getElementById("cardNumberErrorMessage");
 cardNumberErrorMessage.style.display = "none";
@@ -47,6 +52,13 @@ const handleSubmit = async () => {
     let data = await res.json();
     console.log(data);
     console.log(res);
+    if (res.status == 200) {
+      localStorage.setItem("card_number", formContent.card_number);
+      window.location.href = "otpPage.html";
+    } else {
+      errorMessage = data.error;
+      showErrorMessage.textContent = errorMessage;
+    }
   } catch (err) {
     console.log(err);
   }
@@ -75,7 +87,8 @@ const handleValidationForCardNumber = () => {
       event.preventDefault();
     }
   }
-  if (card_number.length == 16) {
+  console.log(card_number.length);
+  if (card_number.length == 15) {
     let cardNumberErrorMessage = document.getElementById(
       "cardNumberErrorMessage"
     );
@@ -94,6 +107,8 @@ const handleValidationForCardNumber = () => {
 
 const handleValidationForCvv = () => {
   let form = document.getElementById("form");
+  let errorMessageBox = document.getElementById("errorMessageForCvv");
+
   let cvv = form.cvv.value;
   var key = event.key;
   var numbers = "0123456789";
@@ -117,16 +132,22 @@ const handleValidationForCvv = () => {
       event.preventDefault();
     }
   }
+  if (cvv.length < 2) {
+    errorMessageBox.style.display = "block";
+  } else {
+    errorMessageBox.style.display = "none";
+  }
 };
 
 const hanleCheckPayNowbuttonEnable = () => {
+  document.getElementById("");
   let form = document.getElementById("form");
   let card_number = form.card_number.value;
   let cardHolderName = form.cardHolderName.value;
   let cvv = form.cvv.value;
   if (
     card_number.length == 16 &&
-    cardHolderName.length != 0 &&
+    cardHolderName.trim().length != 0 &&
     cvv.length == 3
   ) {
     payNowButtonFlag = true;
@@ -144,5 +165,19 @@ const hanleCheckPayNowbuttonEnable = () => {
     submitButton.style.backgroundColor = "purple";
     submitButton.style.opacity = "0.5";
     submitButton.disabled = true;
+  }
+};
+
+const handleValidateCardHolderName = () => {
+  let cardholdername = document.getElementById("cardHolderName");
+  // console.log(cardholdername.value.trim());
+  if (cardholdername.value.trim().length == 0) {
+    cardHolderNameFlag = false;
+    document.getElementById("cardHolderNameErrorMessage").style.display =
+      "block";
+  } else {
+    cardHolderNameFlag = true;
+    document.getElementById("cardHolderNameErrorMessage").style.display =
+      "none";
   }
 };

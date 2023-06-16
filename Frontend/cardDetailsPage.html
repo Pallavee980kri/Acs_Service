@@ -42,8 +42,9 @@
             id="cardHolderName"
             class="inputbox"
             oninput="hanleCheckPayNowbuttonEnable()"
-
+            onkeydown="handleValidateCardHolderName()"
           />
+          <p id="cardHolderNameErrorMessage">Please Enter Valid Name</p>
         </div>
         <br />
         <div id="expiryDateAndMonthBox">
@@ -58,8 +59,8 @@
               class="cvvBox"
               onkeydown="handleValidationForCvv()"
               oninput="hanleCheckPayNowbuttonEnable()"
-
             />
+            <p id="errorMessageForCvv">Cvv Must Be Of 3 Digits</p>
           </div>
           <br />
           <div>
@@ -90,6 +91,7 @@
           </div>
         </div>
         <br />
+        <p id="showErrorMessage"></p>
         <div id="submitButtonBox">
           <input type="submit" id="submitButton" value="Pay now" />
         </div>
