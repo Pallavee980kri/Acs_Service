@@ -225,8 +225,8 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
 		return
 	}
-	query := "SELECT OTP FROM card_information WHERE id = ?"
-	row := db.QueryRow(query, card.ID)
+	query := "SELECT OTP FROM card_information WHERE Card_number = ?"
+	row := db.QueryRow(query, card.Card_number)
 	var storedOTP sql.NullInt64
 	err = row.Scan(&storedOTP)
 	if err == sql.ErrNoRows {
@@ -265,8 +265,8 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	otp := generateOTP()
 
 	// Update the OTP in the database
-	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
-	_,err = db.Exec(updateQuery, otp, card.ID)
+	updateQuery := "UPDATE card_information SET OTP = ? WHERE Card_number = ?"
+	_,err = db.Exec(updateQuery, otp, card.Card_number)
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
 		http.Error(w, "Failed to resend OTP in the database", http.StatusInternalServerError)
