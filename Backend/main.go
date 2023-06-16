@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 
-	// "time"
+	"time"
 
 	// "regexp"
 	"strings"
@@ -244,6 +244,21 @@ if len(errorMessages) > 0 {
 		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
 	}
 	w.Write(jsonResp)
+
+	newtimer := time.NewTimer(15 * time.Second)
+  
+    // Notifying the channel
+    <-newtimer.C
+	queryforUpdateotp := "UPDATE card_information SET OTP = NULL WHERE Card_number = ?"
+	_, err = db.Exec(queryforUpdateotp, card.Card_number)
+	if err != nil {
+		log.Println("Error deleting OTP:", err)
+		return 
+	}
+	log.Println("OTP deleted successfully")
+	
+	 
+
 	
 }
 
