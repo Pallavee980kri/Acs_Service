@@ -174,7 +174,30 @@ if len(errorMessages) > 0 {
     if err == sql.ErrNoRows {
 		// Card data not found in the database
 		log.Println("Error in card data founding:", err)
-        http.Error(w, "Card data not found", http.StatusNotFound)
+        // http.Error(w, "Card data not found", http.StatusNotFound)
+		statusCode := http.StatusNotFound // Use the desired status code
+	w.WriteHeader(statusCode)
+
+	// Create the error response
+	errorResponse := map[string]string{
+		"error": "card data not found", // Replace with your desired error message
+	}
+
+	// Marshal the error response into JSON
+	responseJSON, err := json.Marshal(errorResponse)
+	if err != nil {
+		log.Println("Failed to marshal error response:", err)
+		return
+	}
+
+	// Set the response content type
+	w.Header().Set("Content-Type", "application/json")
+
+	// Send the JSON response
+	_, err = w.Write(responseJSON)
+	if err != nil {
+		log.Println("Failed to send response:", err)
+	}
 		return
 	} else if err != nil {
 		log.Println("Error querying the database:", err)
