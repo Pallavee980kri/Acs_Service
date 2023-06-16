@@ -290,32 +290,32 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 
 func resendOTP(w http.ResponseWriter, r *http.Request) {
 	// Extract the card number from the request
-	cardNumber :=storedCard.Card_number
+	// cardNumber :=storedCard.Card_number
 
-	// Query the database for the card information based on the card number
-	query := "SELECT ID FROM card_information WHERE card_number = ?"
-	row := db.QueryRow(query, cardNumber)
+	// // Query the database for the card information based on the card number
+	// query := "SELECT ID FROM card_information WHERE card_number = ?"
+	// row := db.QueryRow(query, cardNumber)
 
-	var cardID int
-	err := row.Scan(&cardID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Println("No card information found for the provided card number")
-			http.Error(w, "No card information found", http.StatusNotFound)
-			return
-		}
+	// var cardID int
+	// err := row.Scan(&cardID)
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		log.Println("No card information found for the provided card number")
+	// 		http.Error(w, "No card information found", http.StatusNotFound)
+	// 		return
+	// 	}
 
-		log.Println("Error retrieving card information:", err)
-		http.Error(w, "Failed to retrieve card information", http.StatusInternalServerError)
-		return
-	}
+	// 	log.Println("Error retrieving card information:", err)
+	// 	http.Error(w, "Failed to retrieve card information", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	// Generate a new OTP
 	otp := generateOTP()
 
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
-	_, err = db.Exec(updateQuery, otp, storedCard.ID)
+	_,err:= db.Exec(updateQuery, otp, storedCard.ID)
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
 		http.Error(w, "Failed to resend OTP in the database", http.StatusInternalServerError)
