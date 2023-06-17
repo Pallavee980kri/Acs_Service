@@ -215,13 +215,16 @@ if len(errorMessages) > 0 {
     otp := generateOTP()
     // Update the OTP in the database
 	// updateQuery := "UPDATE card_information SET OTP = ?, WHERE id = ?"
+	// coalesceQuery:="SELECT COALESCE(OTP, 0) AS OTP FROM card_information"
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
 
 	
 	// expiry := time.Now().Add(1 * time.Minute)
 	// _, err = db.Exec(updateQuery, otp,card.ID)
+	// _, err1:= db.Exec(coalesceQuery)
 	_, err = db.Exec(updateQuery, otp, storedCard.ID)
 
+	
     if err != nil {
     log.Println("Error updating OTP in the database:", err)
     http.Error(w, "Failed to update OTP in the database", http.StatusInternalServerError)
@@ -249,13 +252,32 @@ if len(errorMessages) > 0 {
   
     // Notifying the channel
     <-newtimer.C
-	queryforUpdateotp := "UPDATE card_information SET OTP = NULL WHERE Card_number = ?"
-	_, err = db.Exec(queryforUpdateotp, card.Card_number)
+	queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
+	_, err = db.Exec(queryForUpdateOTP, card.Card_number)
 	if err != nil {
-		log.Println("Error deleting OTP:", err)
-		return 
+		log.Println("Error updating OTP:", err)
+		return
 	}
+	
 	log.Println("OTP deleted successfully")
+// 	queryForUpdateOTP := "UPDATE card_information SET OTP = ? WHERE Card_number = ?"
+// stmt, err := db.Prepare(queryForUpdateOTP)
+// if err != nil {
+//     log.Println("Error preparing statement:", err)
+//     return
+// }
+// defer stmt.Close()
+
+// _, err = stmt.Exec(nil, card.Card_number)
+// if err != nil {
+//     log.Println("Error updating OTP:", err)
+//     return
+// }
+
+// log.Println("OTP deleted successfully")
+
+	
+
 	
 	 
 
@@ -268,63 +290,6 @@ func generateOTP() int {
 	return otp
 
 }
-// func deleteOTPFromDatabase(db *sql.DB, cardID int) {
-// 	deleteQuery := "UPDATE card_information SET OTP = NULL, WHERE id = ?"
-// 	_, err := db.Exec(deleteQuery, cardID)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	fmt.Println("OTP deleted from the database")
-// }
-
-
-
-
-//validation for card number of -+e and space character with regexp
-// func containsInvalidCharsInCardNumber(cardNumber string) bool {
-	// regex := regexp.MustCompile(`[-+e\s]`)
-	// return regex.MatchString(cardNumber)
-// }
-
-
-
-
-// Match the OTP received from the frontend with the logger OTP
-// func matchOTP(w http.ResponseWriter, r *http.Request) {
-// 	err := json.NewDecoder(r.Body).Decode(&card)
-// 	if err != nil {
-// 		log.Println("Error parsing JSON payload:", err)
-// 		http.Error(w, "Failed to parse JSON payload", http.StatusBadRequest)
-// 		return
-// 	}
-// 	query := "SELECT OTP FROM card_information WHERE Card_number = ?"
-// 	row := db.QueryRow(query, card.Card_number)
-// 	var storedOTP sql.NullInt64
-// 	err = row.Scan(&storedOTP)
-// 	if err == sql.ErrNoRows {
-// 		log.Println("No OTP found for the given card_number:", card.Card_number)
-// 		http.Error(w, "No OTP found", http.StatusNotFound)
-// 		return
-// 	}else if err != nil {
-// 		log.Println("Error retrieving OTP from the database:", err)
-// 		http.Error(w, "Failed to retrieve OTP from the database", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	if storedOTP.Valid && int(card.OTP)== int(storedOTP.Int64) {
-// 		log.Println("OTP matched successfully")
-
-// 	} else {
-// 		log.Println("Invalid OTP provided")
-// 		http.Error(w, "Invalid OTP", http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	w.Write([]byte("OTP matched successfully"))
-// }
-
-
 func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -349,13 +314,9 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if storedOTP.Valid && int(card.OTP) == int(storedOTP.Int64) {
-		if count >= 3 {
-			log.Println("OTP matched maximum number of times")
-			http.Error(w, "OTP matched maximum number of times", http.StatusForbidden)
-			return
-		}
+		
 
-		count++
+		count=0
 		// Update the count in the database
 		updateQuery := "UPDATE card_information SET count = ? WHERE Card_number = ?"
 		_, err := db.Exec(updateQuery, count, card.Card_number)
@@ -367,6 +328,19 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 
 		log.Println("OTP matched successfully. Count:", count)
 	} else {
+		if count >= 3 {
+			log.Println("OTP matched maximum number of times")
+			http.Error(w, "OTP matched maximum number of times", http.StatusForbidden)
+			return
+		}
+		count++
+		updateQuery := "UPDATE card_information SET count = ? WHERE Card_number = ?"
+		_, err := db.Exec(updateQuery, count, card.Card_number)
+		if err != nil {
+			log.Println("Error updating OTP count:", err)
+			http.Error(w, "Failed to update OTP count", http.StatusInternalServerError)
+			return
+		}
 		log.Println("Invalid OTP provided")
 		http.Error(w, "Invalid OTP", http.StatusBadRequest)
 		return
