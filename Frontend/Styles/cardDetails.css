@@ -2,8 +2,21 @@
   font-family: sans-serif;
 }
 
-#container {
-  height: 28rem;
+body {
+  background-image: url("https://d6xcmfyh68wv8.cloudfront.net/blog-content/uploads/2021/01/IS2-1536x873.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+h1 {
+  color: yellow;
+}
+
+.container {
+  background-color: #32ecb0;
+  border-radius: 10px;
+  height: auto;
   width: 35%;
   margin: auto;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
@@ -11,8 +24,15 @@
     rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
   margin-bottom: 2rem;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.singleInputBox {
+  width: 80%;
 }
 
 .inputbox {
@@ -24,7 +44,7 @@
 
 .inputContainer {
   height: 2rem;
-  width: 20rem;
+  width: 100%;
 }
 .cvvBox {
   height: 1.5rem;
@@ -33,7 +53,10 @@
   box-sizing: border-box;
 }
 #expiryDateAndMonthBox {
+  width: 80%;
   display: flex;
+  gap: 1rem;
+  align-items: center;
   justify-content: space-between;
 }
 #submitButton {
@@ -50,7 +73,7 @@
 #submitButtonBox {
   height: 2rem;
   width: 9rem;
-  margin: auto;
+  /* margin: auto; */
 }
 .acsText {
   height: 4rem;
@@ -86,7 +109,7 @@
 }
 
 @media all and (max-width: 1000px) {
-  #container {
+  .container {
     width: 80%;
   }
 }
@@ -95,4 +118,3 @@
   #container {
     width: 70%;
   } */
-
