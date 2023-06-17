@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	"time"
+	// "time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
@@ -184,18 +184,18 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(jsonResp)
 
-	newtimer := time.NewTimer(15 * time.Second)
+	// newtimer := time.NewTimer(15 * time.Second)
 
-	// Notifying the channel
-	<-newtimer.C
-	queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
-	_, err = db.Exec(queryForUpdateOTP, card.Card_number)
-	if err != nil {
-		log.Println("Error updating OTP:", err)
-		return
-	}
+	// // Notifying the channel
+	// <-newtimer.C
+	// queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
+	// _, err = db.Exec(queryForUpdateOTP, card.Card_number)
+	// if err != nil {
+	// 	log.Println("Error updating OTP:", err)
+	// 	return
+	// }
 
-	log.Println("OTP deleted successfully")
+	// log.Println("OTP deleted successfully")
 }
 
 // Function to generate a random OTP

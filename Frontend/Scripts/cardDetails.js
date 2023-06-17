@@ -3,8 +3,10 @@ var payNowButtonFlag = false;
 var cardNumberValidFlag = true;
 var errorMessage = "";
 var cardHolderNameFlag = true;
+var pleaseWaitLoading=false
 document.getElementById("cardHolderNameErrorMessage").style.display = "none";
 document.getElementById("errorMessageForCvv").style.display = "none";
+document.getElementById("pleaseWait").style.display="none"
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
 let submitButton = document.getElementById("submitButton");
@@ -24,6 +26,8 @@ const AddExpiryYearOption = () => {
 AddExpiryYearOption();
 
 const handleSubmit = async () => {
+  document.getElementById("submitButton").style.display="none"
+  document.getElementById("pleaseWait").style.display="block"
   try {
     event.preventDefault();
 
@@ -43,6 +47,7 @@ const handleSubmit = async () => {
     console.log(formContent);
 
     let res = await fetch("http://localhost:8000/process_payment", {
+
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -53,9 +58,11 @@ const handleSubmit = async () => {
     console.log(data);
     console.log(res);
     if (res.status == 200) {
+      document.getElementById("pleaseWait").style.display="none"
       localStorage.setItem("card_number", formContent.card_number);
       window.location.href = "otpPage.html";
     } else {
+      document.getElementById("pleaseWait").style.display="none"
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
     }
