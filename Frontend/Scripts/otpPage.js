@@ -2,11 +2,13 @@ let errorMessage = "";
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
 document.getElementById("pleaseWait").style.display = "none";
+document.getElementById("pleaseWaitForResendOTP").style.display="none"
 let cardNumber = localStorage.getItem("card_number");
 
 const handleSubmitOtp = async () => {
   document.getElementById("sendOtp").style.display = "none";
   document.getElementById("pleaseWait").style.display = "block";
+  // document.getElementById("pleaseWaitForResendOTP").style.display="block"
   const payload = {
     card_number: cardNumber,
     OTP: +document.getElementById("otp").value,
@@ -52,6 +54,8 @@ function handleValidationForOtp() {
 // handleValidationForOtp();
 
 const handleResendOtp=async()=>{
+  document.getElementById("pleaseWaitForResendOTP").style.display="block"
+  document.getElementById("resendOtp").style.display="none"
   const payload={
     card_number:cardNumber
   }
@@ -63,11 +67,15 @@ let res = await fetch("http://localhost:8000/resend_otp",{
   },
   body:JSON.stringify(payload)
 })
-// let data=await res.json();
+let data=await res.json();
 if(res.status==200){
+  document.getElementById("pleaseWaitForResendOTP").style.display="none"
+  document.getElementById("resendOtp").style.display="block"
   alert("OTP resend Successfully...")
 }
 else{
+  document.getElementById("resendOtp").style.display="block"
+  document.getElementById("pleaseWaitForResendOTP").style.display="none"
   errorMessage = data.error;
   showErrorMessage.textContent = errorMessage;
 }
