@@ -8,8 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	// "time"
-
+	"time"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -175,27 +174,27 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
 	//sending the response into json format
-	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-	resp["message"] = "OTP added successfully"
-	jsonResp, err := json.Marshal(resp)
-	if err != nil {
-		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
-	}
-	w.Write(jsonResp)
-
-	// newtimer := time.NewTimer(15 * time.Second)
-
-	// // Notifying the channel
-	// <-newtimer.C
-	// queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
-	// _, err = db.Exec(queryForUpdateOTP, card.Card_number)
-	// if err != nil {
-	// 	log.Println("Error updating OTP:", err)
-	// 	return
-	// }
-
-	// log.Println("OTP deleted successfully")
+	successMessageResponse(w,r,"OTP added successfully!")
+   //this code is for timer of 15 seconds of deleting the otp after some secnd from db
+	go func() {
+		newTimer := time.NewTimer(120 * time.Second)
+	
+		// Wait for the timer to expire
+		<-newTimer.C
+	
+		// Perform the update in the background
+		go func() {
+			queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
+			_, err := db.Exec(queryForUpdateOTP, card.Card_number)
+			if err != nil {
+				log.Println("Error updating OTP:", err)
+				return
+			}
+			log.Println("OTP deleted successfully")
+		}()
+	}()
+	
+	
 }
 
 // Function to generate a random OTP
@@ -261,7 +260,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("OTP matched successfully"))
+	successMessageResponse(w,r,"OTP matched successfully")
 }
 
 // API for resend the OTP
@@ -289,7 +288,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OTP resent successfully"))
+	successMessageResponse(w,r,"OTP resent successfully")
 }
 
 func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
@@ -313,4 +312,15 @@ func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 		log.Println("Failed to send response:", err)
 	}
 
+}
+
+func successMessageResponse(w http.ResponseWriter,r *http.Request,msg string){
+	w.Header().Set("Content-Type", "application/json")
+	resp := make(map[string]string)
+	resp["message"] = msg
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+	}
+	w.Write(jsonResp)
 }
