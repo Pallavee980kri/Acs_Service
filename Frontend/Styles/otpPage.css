@@ -22,7 +22,7 @@
   justify-content: space-between;
 }
 
-.resendOtp {
+#resendOtp {
   color: aliceblue;
   background-color: gray;
   border: none;
@@ -30,7 +30,7 @@
   width: 8rem;
   cursor: pointer;
 }
-.sendOtp {
+#sendOtp {
   color: aliceblue;
   background-color: gray;
   border: none;
@@ -44,4 +44,9 @@
   justify-content: center;
   align-items: center;
   width: auto;
+}
+#showErrorMessage {
+  text-align: center;
+  font-weight: bold;
+  color: red;
 }
