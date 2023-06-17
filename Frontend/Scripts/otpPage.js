@@ -1,14 +1,12 @@
-let errorMessage=""
+let errorMessage = "";
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
-document.getElementById("pleaseWait").style.display="none"
+document.getElementById("pleaseWait").style.display = "none";
 let cardNumber = localStorage.getItem("card_number");
 
-
-
 const handleSubmitOtp = async () => {
-  document.getElementById("sendOtp").style.display="none"
-  document.getElementById("pleaseWait").style.display="block"
+  document.getElementById("sendOtp").style.display = "none";
+  document.getElementById("pleaseWait").style.display = "block";
   const payload = {
     card_number: cardNumber,
     OTP: +document.getElementById("otp").value,
@@ -21,16 +19,15 @@ const handleSubmitOtp = async () => {
       },
       body: JSON.stringify(payload),
     });
-    let data=await res.json();
+    let data = await res.json();
     // console.log(res)
     // console.log(data)
-    if(res.status==200){
-      document.getElementById("pleaseWait").style.display="none"
-      document.getElementById("sendOtp").style.display="block"
-      alert("Payment Successfully Done !")
-    }
-    else{
-      document.getElementById("sendOtp").style.display="block"
+    if (res.status == 200) {
+      document.getElementById("pleaseWait").style.display = "none";
+      document.getElementById("sendOtp").style.display = "block";
+      alert("Payment Successfully Done !");
+    } else {
+      document.getElementById("sendOtp").style.display = "block";
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
     }
@@ -53,3 +50,30 @@ function handleValidationForOtp() {
   }
 }
 // handleValidationForOtp();
+
+const handleResendOtp=async()=>{
+  const payload={
+    card_number:cardNumber
+  }
+  try{
+let res = await fetch("http://localhost:8000/resend_otp",{
+  method:"POST",
+  headers:{
+    "content-type":"application/json"
+  },
+  body:JSON.stringify(payload)
+})
+// let data=await res.json();
+if(res.status==200){
+  alert("OTP resend Successfully...")
+}
+else{
+  errorMessage = data.error;
+  showErrorMessage.textContent = errorMessage;
+}
+  }
+  catch(err){
+    console.log(err)
+  }
+
+}
