@@ -29,6 +29,7 @@ type Card struct {
 var storedCard Card
 var db *sql.DB
 var card Card
+var cancelTimer = make(chan struct{})
 
 func connect() error {
 	var err error
@@ -202,22 +203,21 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	successMessageResponse(w, r, "OTP added successfully!")
 	//this code is for timer of 15 seconds of deleting the otp after some secnd from db
 	go func() {
-		timer := time.NewTimer(2 * time.Minute)
-		// Wait for the timer to expire
-		// <-timer.C
-		defer timer.Stop()
+		select {
+		case <-time.After(30 * time.Second):
+			go func() {
+				queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
+				_, err := db.Exec(queryForUpdateOTP, card.Card_number)
+				if err != nil {
+					log.Println("Error updating OTP:", err)
+					return
+				}
 
-		// Perform the update in the background
-		go func() {
-			queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
-			_, err := db.Exec(queryForUpdateOTP, card.Card_number)
-			if err != nil {
-				log.Println("Error updating OTP:", err)
-				return
-			}
-			log.Println("OTP deleted successfully")
+				log.Println("OTP deleted successfully")
 
-		}()
+			}()
+		case <-cancelTimer:
+		}
 	}()
 
 }
@@ -293,7 +293,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 
 // API for resend the OTP
 func resendOTP(w http.ResponseWriter, r *http.Request) {
-
+	cancelTimer <- struct{}{}
 	var card Card
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -303,6 +303,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	otp := generateOTP()
+
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE Card_number = ?"
 	_, err = db.Exec(updateQuery, otp, card.Card_number)
@@ -314,6 +315,24 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
 	successMessageResponse(w, r, "OTP resent successfully")
+	go func() {
+		select {
+		case <-time.After(30 * time.Second):
+			go func() {
+				queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
+				_, err := db.Exec(queryForUpdateOTP, card.Card_number)
+				if err != nil {
+					log.Println("Error updating OTP:", err)
+					return
+				}
+
+				log.Println("OTP deleted successfully")
+
+			}()
+		case <-cancelTimer:
+		}
+	}()
+
 }
 
 // Function to generate a random OTP
