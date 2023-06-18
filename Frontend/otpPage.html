@@ -9,29 +9,31 @@
   <body>
     <h1 class="otpText">OTP Page</h1>
     <div class="container">
-      <div>
-        <label>Enter OTP</label>
-        <br />
-        <br />
-
-        <input
-          type="number"
-          placeholder="enter OTP"
-          id="otp"
-          class="inputbox"
-          onkeydown="handleValidationForOtp()"
-        />
-      </div>
-      <br>
-      <br>
-      <p id="showErrorMessage"></p>
-      <div class="otpBoxes">
-        <button id="resendOtp" onclick="handleResendOtp()">RESEND OTP</button>
-        <p id="pleaseWaitForResendOTP">Please Wait ...</p>
-        <button id="sendOtp" onclick="handleSubmitOtp()">Submit</button>
-        <p id="pleaseWait">Please Wait ...</p>
-      </div>
+    <div class="inputMainBox">
+    <label>Enter OTP</label>
+    <br />
+    <br />
+    
+    
+    <input
+    type="number"
+    placeholder="Enter OTP"
+    id="otp"
+    class="inputbox"
+    onkeydown="handleValidationForOtp()"
+    />
     </div>
-  </body>
+    <br />
+    <br />
+    <p id="showErrorMessage"></p>
+    <div class="otpBoxes">
+    <button id="resendOtp" onclick="handleResendOtp()">RESEND OTP</button>
+    <p id="pleaseWaitForResendOTP">Please Wait ...</p>
+    <button id="sendOtp" onclick="handleSubmitOtp()">SUBMIT</button>
+    <p id="pleaseWait">Please Wait ...</p>
+    </div>
+    </div>
+    </body>
+    
 </html>
 <script src="./Scripts/otpPage.js"></script>

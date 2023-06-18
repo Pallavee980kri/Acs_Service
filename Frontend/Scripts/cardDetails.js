@@ -9,6 +9,7 @@ document.getElementById("errorMessageForCvv").style.display = "none";
 document.getElementById("pleaseWait").style.display="none"
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
+showErrorMessage.style.display = "none";
 let submitButton = document.getElementById("submitButton");
 let cardNumberErrorMessage = document.getElementById("cardNumberErrorMessage");
 cardNumberErrorMessage.style.display = "none";

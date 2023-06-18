@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -71,25 +72,21 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
-
 		errorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
 	log.Printf("Received card data: %+v\n", card)
 	if card.Cardholder_name == "" {
-
 		errorMessagesResponse(w, r, "Card holder name is required")
 		return
 	}
 	//validation for card number
 	if card.Card_number == "" {
-
 		errorMessagesResponse(w, r, "Card number is required.")
 		return
 	}
 
 	if len(card.Card_number) != 16 {
-
 		errorMessagesResponse(w, r, "Card number must be 16 digits.")
 		return
 	}
@@ -100,54 +97,39 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.Contains(card.Card_number, "+") {
-
 		errorMessagesResponse(w, r, "Card number cannot contain '+' character.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, "e") {
-
 		errorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, " ") {
-
 		errorMessagesResponse(w, r, "Card number cannot contain whitespace.")
 		return
 	}
-
-	// if len(errorMessages) > 0 {
-	// 	errorString := strings.Join(errorMessages, " ")
-	// 	http.Error(w, errorString, http.StatusBadRequest)
-	// 	return
-	// }
-
 	if card.CVV == "" || len(card.CVV) != 3 {
-
 		errorMessagesResponse(w, r, "CVV is required Please enter valid 3 digits cvv number")
 		return
 
 	}
-	
+
 	// Check if the card data exists in the database
 	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
 	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
 	err = row.Scan(
-		// &id,
 		&storedCard.ID,
 		&storedCard.Card_number,
 		&storedCard.Cardholder_name,
 		&storedCard.CVV,
 		&storedCard.Expiry_month,
 		&storedCard.Expiry_year,
-		// &otpValue,
 		&storedCard.OTP,
-		// &storedCard.Expiry,
 		&storedCard.Count,
 	)
 	if err == sql.ErrNoRows {
-
 		log.Println("Error in card data founding:", err)
 		errorMessagesResponse(w, r, "Card Data Not Found")
 		return
@@ -156,11 +138,27 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Failed to query the database")
 		return
 	}
-	// Compare the stored card data with the frontend data
-	if card.CVV != storedCard.CVV || card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
-		errorMessagesResponse(w, r, "Card data does not match")
+	if card.CVV != storedCard.CVV {
+		errorMessagesResponse(w, r, "CVV does not match")
 		return
 	}
+	if card.Expiry_month != storedCard.Expiry_month {
+		errorMessagesResponse(w, r, "Expiry Month does not match")
+		return
+	}
+	if card.Card_number != storedCard.Card_number {
+		errorMessagesResponse(w, r, "Card Number does not match")
+		return
+	}
+	if card.Expiry_year != storedCard.Expiry_year {
+		errorMessagesResponse(w, r, "Expiry Year does not match")
+		return
+	}
+	if card.Cardholder_name != storedCard.Cardholder_name {
+		errorMessagesResponse(w, r, "Card Holder Name does not match")
+		return
+	}
+
 	// Generate OTP
 	otp := generateOTP()
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
@@ -174,14 +172,14 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
 	//sending the response into json format
-	successMessageResponse(w,r,"OTP added successfully!")
-   //this code is for timer of 15 seconds of deleting the otp after some secnd from db
+	successMessageResponse(w, r, "OTP added successfully!")
+	//this code is for timer of 15 seconds of deleting the otp after some secnd from db
 	go func() {
-		newTimer := time.NewTimer(120 * time.Second)
-	
+		timer := time.NewTimer(2 * time.Minute)
 		// Wait for the timer to expire
-		<-newTimer.C
-	
+		// <-timer.C
+		defer timer.Stop()
+		
 		// Perform the update in the background
 		go func() {
 			queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
@@ -191,10 +189,10 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Println("OTP deleted successfully")
+			
 		}()
 	}()
-	
-	
+
 }
 
 // Function to generate a random OTP
@@ -203,6 +201,7 @@ func generateOTP() int {
 	return otp
 
 }
+//submit OTP
 func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -210,10 +209,9 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
-
 	query := "SELECT OTP, count FROM card_information WHERE Card_number = ?"
 	row := db.QueryRow(query, card.Card_number)
-	var storedOTP sql.NullInt64
+	var storedOTP int
 	var count int
 	err = row.Scan(&storedOTP, &count)
 	if err == sql.ErrNoRows {
@@ -225,9 +223,19 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Failed to retrieve OTP from the database")
 		return
 	}
+	if storedOTP == 0 && card.OTP == storedOTP {
+		count = 0
+		// Update the count in the database
+		updateQuery := "UPDATE card_information SET count = ? WHERE Card_number = ?"
+		_, err := db.Exec(updateQuery, count, card.Card_number)
+		if err != nil {
+			log.Println("Error Updating In OTP Count:", err)
+			errorMessagesResponse(w, r, "Failed to update OTP count")
+			return
+		}
 
-	if storedOTP.Valid && int(card.OTP) == int(storedOTP.Int64) {
-
+		log.Println("OTP Matched Successfully. Count:", count)
+	} else if storedOTP != 0 && card.OTP == storedOTP {
 		count = 0
 		// Update the count in the database
 		updateQuery := "UPDATE card_information SET count = ? WHERE Card_number = ?"
@@ -237,7 +245,6 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 			errorMessagesResponse(w, r, "Failed to update OTP count")
 			return
 		}
-
 		log.Println("OTP matched successfully. Count:", count)
 	} else {
 		if count >= 3 {
@@ -260,7 +267,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	successMessageResponse(w,r,"OTP matched successfully")
+	successMessageResponse(w, r, "OTP matched successfully")
 }
 
 // API for resend the OTP
@@ -288,7 +295,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
-	successMessageResponse(w,r,"OTP resent successfully")
+	successMessageResponse(w, r, "OTP resent successfully")
 }
 
 func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
@@ -314,7 +321,7 @@ func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 
 }
 
-func successMessageResponse(w http.ResponseWriter,r *http.Request,msg string){
+func successMessageResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]string)
 	resp["message"] = msg
