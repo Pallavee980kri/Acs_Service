@@ -57,6 +57,7 @@ func main() {
 	router.HandleFunc("/process_payment", processPaymentHandler).Methods("POST")
 	router.HandleFunc("/match_otp", matchOTP).Methods("POST")
 	router.HandleFunc("/resend_otp", resendOTP).Methods("POST")
+	// handling cors error
 	http.ListenAndServe(":8000",
 		handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),
@@ -75,17 +76,19 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
-	log.Printf("Received card data: %+v\n", card)
+	// log.Printf("Received card data: %+v\n", card)
 	if card.Cardholder_name == "" {
 		errorMessagesResponse(w, r, "Card holder name is required")
 		return
 	}
-	//validation for card number
 	if card.Card_number == "" {
 		errorMessagesResponse(w, r, "Card number is required.")
 		return
 	}
-
+	if strings.Contains(card.Card_number, ".") {
+		errorMessagesResponse(w, r, "Card number cannot contain '.' character")
+		return
+	}
 	if len(card.Card_number) != 16 {
 		errorMessagesResponse(w, r, "Card number must be 16 digits.")
 		return
@@ -110,10 +113,37 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Card number cannot contain whitespace.")
 		return
 	}
-	if card.CVV == "" || len(card.CVV) != 3 {
-		errorMessagesResponse(w, r, "CVV is required Please enter valid 3 digits cvv number")
+	if card.CVV == "" {
+		errorMessagesResponse(w, r, "CVV is required")
 		return
 
+	}
+	if len(card.CVV) != 3 {
+		errorMessagesResponse(w, r, "Please enter valid 3 digits cvv number")
+		return
+	}
+	if strings.Contains(card.CVV, ".") {
+		errorMessagesResponse(w, r, "CVV cannot contain '.' character")
+		return
+	}
+	if strings.Contains(card.CVV, "-") {
+		errorMessagesResponse(w, r, "Card number cannot contain '-' character.")
+		return
+	}
+
+	if strings.Contains(card.CVV, "+") {
+		errorMessagesResponse(w, r, "Card number cannot contain '+' character.")
+		return
+	}
+
+	if strings.Contains(card.CVV, "e") {
+		errorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
+		return
+	}
+
+	if strings.Contains(card.CVV, " ") {
+		errorMessagesResponse(w, r, "Card number cannot contain whitespace.")
+		return
 	}
 
 	// Check if the card data exists in the database
@@ -158,8 +188,6 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Card Holder Name does not match")
 		return
 	}
-
-	// Generate OTP
 	otp := generateOTP()
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
 	_, err = db.Exec(updateQuery, otp, storedCard.ID)
@@ -171,7 +199,6 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("OTP:", otp)
 	w.WriteHeader(http.StatusOK)
-	//sending the response into json format
 	successMessageResponse(w, r, "OTP added successfully!")
 	//this code is for timer of 15 seconds of deleting the otp after some secnd from db
 	go func() {
@@ -179,7 +206,7 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		// Wait for the timer to expire
 		// <-timer.C
 		defer timer.Stop()
-		
+
 		// Perform the update in the background
 		go func() {
 			queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
@@ -189,19 +216,13 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Println("OTP deleted successfully")
-			
+
 		}()
 	}()
 
 }
 
-// Function to generate a random OTP
-func generateOTP() int {
-	otp := rand.Intn(900000) + 100000
-	return otp
-
-}
-//submit OTP
+// submit OTP
 func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
@@ -281,10 +302,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 		errorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
-
-	// Generate a new OTP
 	otp := generateOTP()
-
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE Card_number = ?"
 	_, err = db.Exec(updateQuery, otp, card.Card_number)
@@ -298,6 +316,14 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	successMessageResponse(w, r, "OTP resent successfully")
 }
 
+// Function to generate a random OTP
+func generateOTP() int {
+	otp := rand.Intn(900000) + 100000
+	return otp
+
+}
+
+// sending error msg in json format
 func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	statusCode := http.StatusNotFound
 	w.WriteHeader(statusCode)
@@ -321,6 +347,7 @@ func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 
 }
 
+// sending success message in json format
 func successMessageResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]string)
