@@ -8,7 +8,7 @@ let cardNumber = localStorage.getItem("card_number");
 const handleSubmitOtp = async () => {
   document.getElementById("sendOtp").style.display = "none";
   document.getElementById("pleaseWait").style.display = "block";
-  // document.getElementById("pleaseWaitForResendOTP").style.display="block"
+
   const payload = {
     card_number: cardNumber,
     OTP: +document.getElementById("otp").value,
@@ -22,8 +22,7 @@ const handleSubmitOtp = async () => {
       body: JSON.stringify(payload),
     });
     let data = await res.json();
-    // console.log(res)
-    // console.log(data)
+  
     if (res.status == 200) {
       document.getElementById("pleaseWait").style.display = "none";
       document.getElementById("sendOtp").style.display = "block";
@@ -52,7 +51,7 @@ function handleValidationForOtp() {
     }
   }
 }
-// handleValidationForOtp();
+
 
 const handleResendOtp = async () => {
   document.getElementById("pleaseWaitForResendOTP").style.display = "block";

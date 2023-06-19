@@ -54,14 +54,13 @@ const handleSubmit = async () => {
       body: JSON.stringify(formContent),
     });
     let data = await res.json();
-    console.log(data);
-    console.log(res);
+    
     if (res.status == 200) {
       document.getElementById("pleaseWait").style.display = "none";
       localStorage.setItem("card_number", formContent.card_number);
       window.location.href = "otpPage.html";
     } else {
-      document.getElementById("pleaseWait").style.display = "none";
+      document.getElementById("pleaseWait").style.display = "block";
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
     }
@@ -181,6 +180,3 @@ const hanleCheckPayNowbuttonEnable = (type) => {
   }
 };
 
-const handleValidateCardHolderName = () => {
-  let cardholdername = document.getElementById("cardHolderName");
-};

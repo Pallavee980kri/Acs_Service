@@ -294,7 +294,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Println("OTP Matched Successfully. Count:", count)
+		log.Println("OTP Matched Successfully.")
 	} else if storedOTP != 0 && card.OTP == storedOTP {
 		count = 0
 		// Update the count in the database
