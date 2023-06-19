@@ -10,16 +10,25 @@ import (
 	"strings"
 	"time"
     // "github.com/Pallavee980kri/Acs_Service/config"
-	"github.com/Pallavee980kri/Acs_Service/structType"
+	// "github.com/Pallavee980kri/Acs_Service/structType"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
+type Card struct {
+	ID              int    `json:"id"`
+	Card_number     string `json:"card_number"`
+	Cardholder_name string `json:"cardholder_name"`
+	CVV             string `json:"cvv"`
+	Expiry_month    int    `json:"expiry_month"`
+	Expiry_year     int    `json:"expiry_year"`
+	OTP             int    `json:"OTP"`
+	Count           int    `json:"count"`
+}
 
-
-var storedCard structType.Card
+var storedCard Card
 var db *sql.DB
-var card structType.Card
+var card Card
 var cancelTimer = make(chan struct{})
 
 
