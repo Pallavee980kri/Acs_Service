@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"strings"
 	"time"
-    // "github.com/Pallavee980kri/Acs_Service/config"
+
+	// "github.com/Pallavee980kri/Acs_Service/config"
 	// "github.com/Pallavee980kri/Acs_Service/structType"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
+
 type Card struct {
 	ID              int    `json:"id"`
 	Card_number     string `json:"card_number"`
@@ -26,14 +28,14 @@ type Card struct {
 	Count           int    `json:"count"`
 }
 
+type carddetails struct {
+	card_number string `json:"card_number"`
+}
+
 var storedCard Card
 var db *sql.DB
 var card Card
 var cancelTimer = make(chan struct{})
-
-
-
-
 
 func connect() error {
 
@@ -153,8 +155,8 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the card data exists in the database
-	query := "SELECT * FROM card_information WHERE card_number = ? AND cardholder_name = ?"
-	row := db.QueryRow(query, card.Card_number, card.Cardholder_name)
+	query := "SELECT * FROM card_information WHERE card_number = ? "
+	row := db.QueryRow(query, card.Card_number)
 	err = row.Scan(
 		&storedCard.ID,
 		&storedCard.Card_number,
@@ -164,75 +166,35 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		&storedCard.Expiry_year,
 		&storedCard.OTP,
 		&storedCard.Count,
-	) 
-	if card.Card_number != storedCard.Card_number || card.Cardholder_name != storedCard.Cardholder_name || card.CVV != storedCard.CVV ||
-		card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
-			ErrorMessagesResponse(w, r, "Card data does not match")
+	)
+	if storedCard.Card_number == "" {
+		ErrorMessagesResponse(w, r, "Card Number Does Not Match!")
 		return
 	}
 
-     if err == sql.ErrNoRows {
-	    log.Println("Error in card data founding:", err)
-		ErrorMessagesResponse(w, r, "Card Data Not Found")
-	    return
-	} else if err != nil {
-	    log.Println("Error querying the database:", err)
-		ErrorMessagesResponse(w, r, "Failed to query the database")
-	    return
+	if card.Cardholder_name != storedCard.Cardholder_name {
+		ErrorMessagesResponse(w, r, "Card Holder Name Does Not Match!")
+		return
+	}
+	if card.CVV != storedCard.CVV {
+		ErrorMessagesResponse(w, r, "CVV Does Not Match!")
+		return
+	}
+	if card.Expiry_month != storedCard.Expiry_month {
+		ErrorMessagesResponse(w, r, "Expiry Month Does Not Match!")
+		return
+	}
+	if card.Expiry_year != storedCard.Expiry_year {
+		ErrorMessagesResponse(w, r, "Expiry year Does Not Match!")
+		return
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// 	if card.Card_number != storedCard.Card_number {
-	//     errorMessagesResponse(w, r, "Card Number does not match")
-	//     return
-	// }
-
-	// if card.Cardholder_name != storedCard.Cardholder_name {
-	//     errorMessagesResponse(w, r, "Card Holder Name does not match")
-	//     return
-	// }
-
-	// if card.CVV != storedCard.CVV {
-	//     errorMessagesResponse(w, r, "CVV does not match")
-	//     return
-	// }
-
-	// if card.Expiry_month != storedCard.Expiry_month {
-	//     errorMessagesResponse(w, r, "Expiry Month does not match")
-	//     return
-	// }
-
-	// if card.Expiry_year != storedCard.Expiry_year {
-	//     errorMessagesResponse(w, r, "Expiry Year does not match")
-	//     return
-	// }
-
-	// if err == sql.ErrNoRows {
-	//     log.Println("Error in card data founding:", err)
-	//     errorMessagesResponse(w, r, "Card Data Not Found")
-	//     return
-	// } if err != nil {
-	//     log.Println("Error querying the database:", err)
-	//     errorMessagesResponse(w, r, "Failed to query the database")
-	//     return
-	// }
-
-	
-	otp := generateOTP()
+	if err != nil {
+		log.Println("Error querying the database:", err)
+		ErrorMessagesResponse(w, r, "Failed to query the database")
+		return
+	}
+    otp := generateOTP()
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
 	_, err = db.Exec(updateQuery, otp, storedCard.ID)
 
@@ -337,18 +299,18 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 // API for resend the OTP
 func resendOTP(w http.ResponseWriter, r *http.Request) {
 	cancelTimer <- struct{}{}
-	var card Card
-	err := json.NewDecoder(r.Body).Decode(&card)
+	var carddata carddetails
+	err := json.NewDecoder(r.Body).Decode(&carddata)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
-        ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
+		ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
-	otp := generateOTP()
+    otp := generateOTP()
 
 	// Update the OTP in the database
-	updateQuery := "UPDATE card_information SET OTP = ? WHERE Card_number = ?"
-	_, err = db.Exec(updateQuery, otp, card.Card_number)
+	updateQuery := "UPDATE card_information SET OTP = ? WHERE card_number = ?"
+	_, err = db.Exec(updateQuery, otp, carddata.card_number)
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
 		ErrorMessagesResponse(w, r, "Failed to resend OTP in the database")
@@ -384,7 +346,6 @@ func generateOTP() int {
 
 }
 
-
 // sending error msg in json format
 func ErrorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	statusCode := http.StatusNotFound
@@ -408,8 +369,6 @@ func ErrorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	}
 
 }
-
-
 
 // sending success message in json format
 func successMessageResponse(w http.ResponseWriter, r *http.Request, msg string) {

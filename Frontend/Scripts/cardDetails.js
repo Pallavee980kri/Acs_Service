@@ -54,15 +54,20 @@ const handleSubmit = async () => {
       body: JSON.stringify(formContent),
     });
     let data = await res.json();
-    
+
     if (res.status == 200) {
       document.getElementById("pleaseWait").style.display = "none";
+      document.getElementById("submitButton").style.display = "block";
       localStorage.setItem("card_number", formContent.card_number);
       window.location.href = "otpPage.html";
     } else {
-      document.getElementById("pleaseWait").style.display = "block";
+      // document.getElementById("pleaseWait").style.display = "block";
+      document.getElementById("submitButton").style.display = "block";
+      document.getElementById("pleaseWait").style.display = "none";
+
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
+      showErrorMessage.style.display = "block";
     }
   } catch (err) {
     console.log(err);
@@ -120,6 +125,8 @@ const handleValidationForCvv = () => {
 };
 
 const hanleCheckPayNowbuttonEnable = (type) => {
+  showErrorMessage.style.display = "none";
+
   let form = document.getElementById("form");
   let errorMessageBox = document.getElementById("errorMessageForCvv");
   let card_number = form.card_number.value;
@@ -179,4 +186,3 @@ const hanleCheckPayNowbuttonEnable = (type) => {
     submitButton.disabled = true;
   }
 };
-

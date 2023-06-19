@@ -1,6 +1,7 @@
 let errorMessage = "";
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
+showErrorMessage.style.display="none"
 document.getElementById("pleaseWait").style.display = "none";
 document.getElementById("pleaseWaitForResendOTP").style.display = "none";
 let cardNumber = localStorage.getItem("card_number");
@@ -22,7 +23,7 @@ const handleSubmitOtp = async () => {
       body: JSON.stringify(payload),
     });
     let data = await res.json();
-  
+
     if (res.status == 200) {
       document.getElementById("pleaseWait").style.display = "none";
       document.getElementById("sendOtp").style.display = "block";
@@ -30,6 +31,8 @@ const handleSubmitOtp = async () => {
       alert("Payment Successfully Done !");
     } else {
       document.getElementById("sendOtp").style.display = "block";
+      document.getElementById("pleaseWait").style.display = "none";
+      document.getElementById("showErrorMessage").style.display="block"
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
     }
@@ -51,7 +54,6 @@ function handleValidationForOtp() {
     }
   }
 }
-
 
 const handleResendOtp = async () => {
   document.getElementById("pleaseWaitForResendOTP").style.display = "block";
@@ -81,4 +83,8 @@ const handleResendOtp = async () => {
   } catch (err) {
     console.log(err);
   }
+};
+
+const handleManageText = () => {
+  document.getElementById("showErrorMessage").style.display = "none";
 };
