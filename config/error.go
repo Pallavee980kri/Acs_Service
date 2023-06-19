@@ -1,13 +1,13 @@
-package config
+package main
 
 import (
 	"encoding/json"
-	"net/http"
 	"log"
+	"net/http"
 )
 
 // sending error msg in json format
-func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
+func ErrorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
 	statusCode := http.StatusNotFound
 	w.WriteHeader(statusCode)
 	// Creating the error response message
