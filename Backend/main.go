@@ -29,7 +29,7 @@ type Card struct {
 }
 
 type carddetails struct {
-	card_number string `json:"card_number"`
+	Card_number string `json:"card_number"`
 }
 
 var storedCard Card
@@ -310,7 +310,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE card_number = ?"
-	_, err = db.Exec(updateQuery, otp, carddata.card_number)
+	_, err = db.Exec(updateQuery, otp, carddata.Card_number)
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
 		ErrorMessagesResponse(w, r, "Failed to resend OTP in the database")
