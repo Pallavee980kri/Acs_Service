@@ -32,7 +32,7 @@ var card Card
 var cancelTimer = make(chan struct{})
 
 func connect() error {
-	
+
 	var err error
 	db, err = sql.Open("mysql", "root:pall850@/acsservice")
 	if err != nil {
@@ -160,36 +160,74 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		&storedCard.Expiry_year,
 		&storedCard.OTP,
 		&storedCard.Count,
-	)
-	if err == sql.ErrNoRows {
-		log.Println("Error in card data founding:", err)
-		errorMessagesResponse(w, r, "Card Data Not Found")
+	) 
+	if card.Card_number != storedCard.Card_number || card.Cardholder_name != storedCard.Cardholder_name || card.CVV != storedCard.CVV ||
+		card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
+		errorMessagesResponse(w, r, "Card data does not match")
 		return
+	}
+
+     if err == sql.ErrNoRows {
+	    log.Println("Error in card data founding:", err)
+	    errorMessagesResponse(w, r, "Card Data Not Found")
+	    return
 	} else if err != nil {
-		log.Println("Error querying the database:", err)
-		errorMessagesResponse(w, r, "Failed to query the database")
-		return
+	    log.Println("Error querying the database:", err)
+	    errorMessagesResponse(w, r, "Failed to query the database")
+	    return
 	}
-	if card.CVV != storedCard.CVV {
-		errorMessagesResponse(w, r, "CVV does not match")
-		return
-	}
-	if card.Expiry_month != storedCard.Expiry_month {
-		errorMessagesResponse(w, r, "Expiry Month does not match")
-		return
-	}
-	if card.Card_number != storedCard.Card_number {
-		errorMessagesResponse(w, r, "Card Number does not match")
-		return
-	}
-	if card.Expiry_year != storedCard.Expiry_year {
-		errorMessagesResponse(w, r, "Expiry Year does not match")
-		return
-	}
-	if card.Cardholder_name != storedCard.Cardholder_name {
-		errorMessagesResponse(w, r, "Card Holder Name does not match")
-		return
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// 	if card.Card_number != storedCard.Card_number {
+	//     errorMessagesResponse(w, r, "Card Number does not match")
+	//     return
+	// }
+
+	// if card.Cardholder_name != storedCard.Cardholder_name {
+	//     errorMessagesResponse(w, r, "Card Holder Name does not match")
+	//     return
+	// }
+
+	// if card.CVV != storedCard.CVV {
+	//     errorMessagesResponse(w, r, "CVV does not match")
+	//     return
+	// }
+
+	// if card.Expiry_month != storedCard.Expiry_month {
+	//     errorMessagesResponse(w, r, "Expiry Month does not match")
+	//     return
+	// }
+
+	// if card.Expiry_year != storedCard.Expiry_year {
+	//     errorMessagesResponse(w, r, "Expiry Year does not match")
+	//     return
+	// }
+
+	// if err == sql.ErrNoRows {
+	//     log.Println("Error in card data founding:", err)
+	//     errorMessagesResponse(w, r, "Card Data Not Found")
+	//     return
+	// } if err != nil {
+	//     log.Println("Error querying the database:", err)
+	//     errorMessagesResponse(w, r, "Failed to query the database")
+	//     return
+	// }
+
+	
 	otp := generateOTP()
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
 	_, err = db.Exec(updateQuery, otp, storedCard.ID)
@@ -205,7 +243,7 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	//this code is for timer of 15 seconds of deleting the otp after some secnd from db
 	go func() {
 		select {
-		case <-time.After(30 * time.Second):
+		case <-time.After(1 * time.Minute):
 			go func() {
 				queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
 				_, err := db.Exec(queryForUpdateOTP, card.Card_number)
@@ -272,7 +310,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		if count >= 3 {
 			log.Println("OTP matched maximum number of times")
 
-			errorMessagesResponse(w, r, "You have reached maximum attemps to submit OTP!")
+			errorMessagesResponse(w, r, "You have reached maximum attemps to submit OTP Please try again !")
 			return
 		}
 		count++
@@ -318,7 +356,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	successMessageResponse(w, r, "OTP resent successfully")
 	go func() {
 		select {
-		case <-time.After(30 * time.Second):
+		case <-time.After(1 * time.Minute):
 			go func() {
 				queryForUpdateOTP := "UPDATE card_information SET OTP = 0 WHERE Card_number = ?"
 				_, err := db.Exec(queryForUpdateOTP, card.Card_number)
