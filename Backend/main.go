@@ -31,6 +31,10 @@ var db *sql.DB
 var card Card
 var cancelTimer = make(chan struct{})
 
+
+
+
+
 func connect() error {
 
 	var err error
