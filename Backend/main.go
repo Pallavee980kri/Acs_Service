@@ -9,26 +9,16 @@ import (
 	"net/http"
 	"strings"
 	"time"
-    "github.com/Pallavee980kri/Acs_Service/config"
+    // "github.com/Pallavee980kri/Acs_Service/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-type Card struct {
-	ID              int    `json:"id"`
-	Card_number     string `json:"card_number"`
-	Cardholder_name string `json:"cardholder_name"`
-	CVV             string `json:"cvv"`
-	Expiry_month    int    `json:"expiry_month"`
-	Expiry_year     int    `json:"expiry_year"`
-	OTP             int    `json:"OTP"`
-	Count           int    `json:"count"`
-}
 
-var storedCard Card
+var storedCard structType.Card
 var db *sql.DB
-var card Card
+var card structType.Card
 var cancelTimer = make(chan struct{})
 
 
@@ -79,76 +69,76 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
-		config.errorMessagesResponse(w, r, "Failed to parse JSON payload")
+		ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
 	// log.Printf("Received card data: %+v\n", card)
 	if card.Cardholder_name == "" {
-		config.errorMessagesResponse(w, r, "Card holder name is required")
+		ErrorMessagesResponse(w, r, "Card holder name is required")
 		return
 	}
 	if card.Card_number == "" {
-		config.errorMessagesResponse(w, r, "Card number is required.")
+		ErrorMessagesResponse(w, r, "Card number is required.")
 		return
 	}
 	if strings.Contains(card.Card_number, ".") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain '.' character")
+		ErrorMessagesResponse(w, r, "Card number cannot contain '.' character")
 		return
 	}
 	if len(card.Card_number) != 16 {
-		config.errorMessagesResponse(w, r, "Card number must be 16 digits.")
+		ErrorMessagesResponse(w, r, "Card number must be 16 digits.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, "-") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain '-' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain '-' character.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, "+") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain '+' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain '+' character.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, "e") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
 		return
 	}
 
 	if strings.Contains(card.Card_number, " ") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain whitespace.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain whitespace.")
 		return
 	}
 	if card.CVV == "" {
-		config.errorMessagesResponse(w, r, "CVV is required")
+		ErrorMessagesResponse(w, r, "CVV is required")
 		return
 
 	}
 	if len(card.CVV) != 3 {
-		config.errorMessagesResponse(w, r, "Please enter valid 3 digits cvv number")
+		ErrorMessagesResponse(w, r, "Please enter valid 3 digits cvv number")
 		return
 	}
 	if strings.Contains(card.CVV, ".") {
-		config.errorMessagesResponse(w, r, "CVV cannot contain '.' character")
+		ErrorMessagesResponse(w, r, "CVV cannot contain '.' character")
 		return
 	}
 	if strings.Contains(card.CVV, "-") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain '-' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain '-' character.")
 		return
 	}
 
 	if strings.Contains(card.CVV, "+") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain '+' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain '+' character.")
 		return
 	}
 
 	if strings.Contains(card.CVV, "e") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain 'e' character.")
 		return
 	}
 
 	if strings.Contains(card.CVV, " ") {
-		config.errorMessagesResponse(w, r, "Card number cannot contain whitespace.")
+		ErrorMessagesResponse(w, r, "Card number cannot contain whitespace.")
 		return
 	}
 
@@ -167,17 +157,17 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	) 
 	if card.Card_number != storedCard.Card_number || card.Cardholder_name != storedCard.Cardholder_name || card.CVV != storedCard.CVV ||
 		card.Expiry_month != storedCard.Expiry_month || card.Expiry_year != storedCard.Expiry_year {
-			config.errorMessagesResponse(w, r, "Card data does not match")
+			ErrorMessagesResponse(w, r, "Card data does not match")
 		return
 	}
 
      if err == sql.ErrNoRows {
 	    log.Println("Error in card data founding:", err)
-		config. errorMessagesResponse(w, r, "Card Data Not Found")
+		ErrorMessagesResponse(w, r, "Card Data Not Found")
 	    return
 	} else if err != nil {
 	    log.Println("Error querying the database:", err)
-		config.errorMessagesResponse(w, r, "Failed to query the database")
+		ErrorMessagesResponse(w, r, "Failed to query the database")
 	    return
 	}
 
@@ -238,7 +228,7 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Error updating OTP in the database:", err)
-		config.errorMessagesResponse(w, r, "Failed to update OTP in the database")
+		ErrorMessagesResponse(w, r, "Failed to update OTP in the database")
 		return
 	}
 	log.Println("OTP:", otp)
@@ -270,7 +260,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
-		config.errorMessagesResponse(w, r, "Failed to parse JSON payload")
+		ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
 	query := "SELECT OTP, count FROM card_information WHERE Card_number = ?"
@@ -280,11 +270,11 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 	err = row.Scan(&storedOTP, &count)
 	if err == sql.ErrNoRows {
 		log.Println("No OTP found for the given card_number:", card.Card_number)
-		config.errorMessagesResponse(w, r, "No OTP found")
+		ErrorMessagesResponse(w, r, "No OTP found")
 		return
 	} else if err != nil {
 		log.Println("Error retrieving OTP from the database:", err)
-		config.errorMessagesResponse(w, r, "Failed to retrieve OTP from the database")
+		ErrorMessagesResponse(w, r, "Failed to retrieve OTP from the database")
 		return
 	}
 	if storedOTP == 0 && card.OTP == storedOTP {
@@ -294,7 +284,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		_, err := db.Exec(updateQuery, count, card.Card_number)
 		if err != nil {
 			log.Println("Error Updating In OTP Count:", err)
-			config.errorMessagesResponse(w, r, "Failed to update OTP count")
+			ErrorMessagesResponse(w, r, "Failed to update OTP count")
 			return
 		}
 
@@ -306,7 +296,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		_, err := db.Exec(updateQuery, count, card.Card_number)
 		if err != nil {
 			log.Println("Error updating OTP count:", err)
-			config.errorMessagesResponse(w, r, "Failed to update OTP count")
+			ErrorMessagesResponse(w, r, "Failed to update OTP count")
 			return
 		}
 		log.Println("OTP matched successfully. Count:", count)
@@ -314,7 +304,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		if count >= 3 {
 			log.Println("OTP matched maximum number of times")
 
-			config.errorMessagesResponse(w, r, "You have reached maximum attemps to submit OTP Please try again !")
+			ErrorMessagesResponse(w, r, "You have reached maximum attemps to submit OTP Please try again !")
 			return
 		}
 		count++
@@ -323,11 +313,11 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("Error updating OTP count:", err)
 
-			config.errorMessagesResponse(w, r, "Failed to update OTP count")
+			ErrorMessagesResponse(w, r, "Failed to update OTP count")
 			return
 		}
 		log.Println("Invalid OTP provided")
-		config.errorMessagesResponse(w, r, "Invalid OTP")
+		ErrorMessagesResponse(w, r, "Invalid OTP")
 		return
 	}
 
@@ -341,8 +331,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&card)
 	if err != nil {
 		log.Println("Error parsing JSON payload:", err)
-
-		config.	errorMessagesResponse(w, r, "Failed to parse JSON payload")
+        ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
 	otp := generateOTP()
@@ -352,7 +341,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(updateQuery, otp, card.Card_number)
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
-		config.errorMessagesResponse(w, r, "Failed to resend OTP in the database")
+		ErrorMessagesResponse(w, r, "Failed to resend OTP in the database")
 		return
 	}
 	log.Println("OTP:", otp)
@@ -382,6 +371,31 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 func generateOTP() int {
 	otp := rand.Intn(900000) + 100000
 	return otp
+
+}
+
+
+// sending error msg in json format
+func ErrorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
+	statusCode := http.StatusNotFound
+	w.WriteHeader(statusCode)
+	// Creating the error response message
+	errorResponse := map[string]string{
+		"error": msg,
+	}
+	// Marshal the error response into JSON
+	responseJSON, err := json.Marshal(errorResponse)
+	if err != nil {
+		log.Println("Failed to marshal error response:", err)
+		return
+	}
+	// Set the response content type
+	w.Header().Set("Content-Type", "application/json")
+	// Send the JSON response
+	_, err = w.Write(responseJSON)
+	if err != nil {
+		log.Println("Failed to send response:", err)
+	}
 
 }
 

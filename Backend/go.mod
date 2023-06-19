@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/Pallavee980kri/Acs_Service v0.0.0-20230619113607-9b4aefef6afd // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
