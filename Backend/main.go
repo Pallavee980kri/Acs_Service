@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
+"github.com/Pallavee980kri/Acs_Service/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -381,29 +381,7 @@ func generateOTP() int {
 
 }
 
-// sending error msg in json format
-func errorMessagesResponse(w http.ResponseWriter, r *http.Request, msg string) {
-	statusCode := http.StatusNotFound
-	w.WriteHeader(statusCode)
-	// Creating the error response message
-	errorResponse := map[string]string{
-		"error": msg,
-	}
-	// Marshal the error response into JSON
-	responseJSON, err := json.Marshal(errorResponse)
-	if err != nil {
-		log.Println("Failed to marshal error response:", err)
-		return
-	}
-	// Set the response content type
-	w.Header().Set("Content-Type", "application/json")
-	// Send the JSON response
-	_, err = w.Write(responseJSON)
-	if err != nil {
-		log.Println("Failed to send response:", err)
-	}
 
-}
 
 // sending success message in json format
 func successMessageResponse(w http.ResponseWriter, r *http.Request, msg string) {
