@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
     // "github.com/Pallavee980kri/Acs_Service/config"
+	"github.com/Pallavee980kri/Acs_Service/structType"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
