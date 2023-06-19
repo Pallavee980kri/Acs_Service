@@ -10,83 +10,82 @@
   <body>
     <h1>Card Details Page</h1>
     <form class="container" id="form" onsubmit="handleSubmit()">
-    <div class="singleInputBox">
-    <label class="allInputFieldHeading">Card Number</label>
-    <input
-    type="number"
-    placeholder="XXXXXXXXXXXXXXXX"
-    id="card_number"
-    class="inputbox"
-    min="0"
-    max="9999999999999999"
-    onkeydown="handleValidationForCardNumber()"
-    oninput="hanleCheckPayNowbuttonEnable()"
-    />
-    <p id="cardNumberErrorMessage">Card Number Must Be Of 16 Digits</p>
-    </div>
-    <div class="singleInputBox">
-    <label class="allInputFieldHeading">CardHolder Name</label>
-    <input
-    type="text"
-    placeholder="Name on card"
-    id="cardHolderName"
-    class="inputbox"
-    oninput="hanleCheckPayNowbuttonEnable()"
-    onkeydown="handleValidateCardHolderName()"
-    />
-    <p id="cardHolderNameErrorMessage">Please Enter Valid Name</p>
-    </div>
-    
-    
-    <div id="expiryDateAndMonthBox">
-    <div>
-    <label class="allInputFieldHeading">CVV</label>
-    <br />
-    <br />
-    <input
-    type="password"
-    placeholder="CVV"
-    id="cvv"
-    class="cvvBox"
-    onkeydown="handleValidationForCvv()"
-    oninput="hanleCheckPayNowbuttonEnable()"
-    />
-    <p id="errorMessageForCvv">Cvv Must Be Of 3 Digits</p>
-    </div>
-    <br />
-    <div>
-    <label class="allInputFieldHeading">Expiry month</label>
-    <br />
-    <br />
-    <select id="expiryMonth">
-    <option value="1">01</option>
-    <option value="2">02</option>
-    <option value="3">03</option>
-    <option value="4">04</option>
-    <option value="5">05</option>
-    <option value="6">06</option>
-    <option value="7">07</option>
-    <option value="8">08</option>
-    <option value="9">09</option>
-    <option value="10">10</option>
-    <option value="11">11</option>
-    <option value="12">12</option>
-    </select>
-    </div>
-    <br />
-    <div>
-    <label class="allInputFieldHeading">Expiry Year</label>
-    <br />
-    <br />
-    <select id="expiryYear"></select>
-    </div>
-    </div>
-    <p id="showErrorMessage"></p>
-    <div id="submitButtonBox">
-    <input type="submit" id="submitButton" value="Pay now" />
-    <p id="pleaseWait">Please Wait ...</p>
-    </div>
+      <div class="singleInputBox">
+        <label class="allInputFieldHeading">Card Number</label>
+        <input
+          type="number"
+          placeholder="XXXXXXXXXXXXXXXX"
+          id="card_number"
+          class="inputbox"
+          min="0"
+          max="9999999999999999"
+          onkeydown="handleValidationForCardNumber()"
+          oninput="hanleCheckPayNowbuttonEnable('cardNumberInput')"
+        />
+        <p id="cardNumberErrorMessage">Card Number Must Be Of 16 Digits</p>
+      </div>
+      <div class="singleInputBox">
+        <label class="allInputFieldHeading">CardHolder Name</label>
+        <input
+          type="text"
+          placeholder="Name on card"
+          id="cardHolderName"
+          class="inputbox"
+          oninput="hanleCheckPayNowbuttonEnable('carhHolderNameInput')"
+          onkeydown="handleValidateCardHolderName()"
+        />
+        <p id="cardHolderNameErrorMessage">Please Enter Valid Name</p>
+      </div>
+
+      <div id="expiryDateAndMonthBox">
+        <div>
+          <label class="allInputFieldHeading">CVV</label>
+          <br />
+          <br />
+          <input
+            type="password"
+            placeholder="CVV"
+            id="cvv"
+            class="cvvBox"
+            onkeydown="handleValidationForCvv()"
+            oninput="hanleCheckPayNowbuttonEnable('cvvInput')"
+          />
+          <p id="errorMessageForCvv">Cvv Must Be Of 3 Digits</p>
+        </div>
+        <br />
+        <div>
+          <label class="allInputFieldHeading">Expiry month</label>
+          <br />
+          <br />
+          <select id="expiryMonth">
+            <option value="1">01</option>
+            <option value="2">02</option>
+            <option value="3">03</option>
+            <option value="4">04</option>
+            <option value="5">05</option>
+            <option value="6">06</option>
+            <option value="7">07</option>
+            <option value="8">08</option>
+            <option value="9">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+        <br />
+        <div>
+          <label class="allInputFieldHeading">Expiry Year</label>
+          <br />
+          <br />
+          <select id="expiryYear"></select>
+        </div>
+      </div>
+      <p id="showErrorMessage"></p>
+      <div id="submitButtonBox">
+        <input type="submit" id="submitButton" value="Pay now" />
+        <p id="pleaseWait">Please Wait ...</p>
+      </div>
     </form>
-    </body>
+  </body>
 </html>
 <script src="./Scripts/cardDetails.js"></script>

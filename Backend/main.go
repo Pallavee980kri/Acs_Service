@@ -32,6 +32,7 @@ var card Card
 var cancelTimer = make(chan struct{})
 
 func connect() error {
+	
 	var err error
 	db, err = sql.Open("mysql", "root:pall850@/acsservice")
 	if err != nil {

@@ -1,12 +1,11 @@
-//creating options for Expiry Year
 var payNowButtonFlag = false;
 var cardNumberValidFlag = true;
 var errorMessage = "";
 var cardHolderNameFlag = true;
-var pleaseWaitLoading=false
+var pleaseWaitLoading = false;
 document.getElementById("cardHolderNameErrorMessage").style.display = "none";
 document.getElementById("errorMessageForCvv").style.display = "none";
-document.getElementById("pleaseWait").style.display="none"
+document.getElementById("pleaseWait").style.display = "none";
 let showErrorMessage = document.getElementById("showErrorMessage");
 showErrorMessage.textContent = errorMessage;
 showErrorMessage.style.display = "none";
@@ -27,8 +26,8 @@ const AddExpiryYearOption = () => {
 AddExpiryYearOption();
 
 const handleSubmit = async () => {
-  document.getElementById("submitButton").style.display="none"
-  document.getElementById("pleaseWait").style.display="block"
+  document.getElementById("submitButton").style.display = "none";
+  document.getElementById("pleaseWait").style.display = "block";
   try {
     event.preventDefault();
 
@@ -48,7 +47,6 @@ const handleSubmit = async () => {
     console.log(formContent);
 
     let res = await fetch("http://localhost:8000/process_payment", {
-
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -59,11 +57,11 @@ const handleSubmit = async () => {
     console.log(data);
     console.log(res);
     if (res.status == 200) {
-      document.getElementById("pleaseWait").style.display="none"
+      document.getElementById("pleaseWait").style.display = "none";
       localStorage.setItem("card_number", formContent.card_number);
       window.location.href = "otpPage.html";
     } else {
-      document.getElementById("pleaseWait").style.display="none"
+      document.getElementById("pleaseWait").style.display = "none";
       errorMessage = data.error;
       showErrorMessage.textContent = errorMessage;
     }
@@ -76,12 +74,7 @@ const handleValidationForCardNumber = () => {
   let form = document.getElementById("form");
   let card_number = form.card_number.value;
 
-  if (
-    event.keyCode == 69 ||
-    event.keyCode == 187 ||
-    event.keyCode == 190 ||
-    event.keyCode == 189
-  ) {
+  if (event.keyCode == 69 || event.keyCode == 187 || event.keyCode == 190) {
     event.preventDefault();
   }
 
@@ -95,27 +88,12 @@ const handleValidationForCardNumber = () => {
       event.preventDefault();
     }
   }
-  console.log(card_number.length);
-  if (card_number.length == 15) {
-    let cardNumberErrorMessage = document.getElementById(
-      "cardNumberErrorMessage"
-    );
-    cardNumberErrorMessage.style.display = "none";
-    cardNumberValidFlag = true;
-  } else {
-    cardNumberValidFlag = false;
-    let cardNumberErrorMessage = document.getElementById(
-      "cardNumberErrorMessage"
-    );
-    cardNumberErrorMessage.style.display = "block";
-  }
 };
 
 //validation for cvv
 
 const handleValidationForCvv = () => {
   let form = document.getElementById("form");
-  let errorMessageBox = document.getElementById("errorMessageForCvv");
 
   let cvv = form.cvv.value;
   var key = event.key;
@@ -140,19 +118,46 @@ const handleValidationForCvv = () => {
       event.preventDefault();
     }
   }
-  if (cvv.length < 2) {
-    errorMessageBox.style.display = "block";
-  } else {
-    errorMessageBox.style.display = "none";
-  }
 };
 
-const hanleCheckPayNowbuttonEnable = () => {
-  document.getElementById("");
+const hanleCheckPayNowbuttonEnable = (type) => {
   let form = document.getElementById("form");
+  let errorMessageBox = document.getElementById("errorMessageForCvv");
   let card_number = form.card_number.value;
   let cardHolderName = form.cardHolderName.value;
   let cvv = form.cvv.value;
+  if (type == "cardNumberInput") {
+    if (card_number.length == 16) {
+      let cardNumberErrorMessage = document.getElementById(
+        "cardNumberErrorMessage"
+      );
+      cardNumberErrorMessage.style.display = "none";
+      cardNumberValidFlag = true;
+    } else {
+      cardNumberValidFlag = false;
+      let cardNumberErrorMessage = document.getElementById(
+        "cardNumberErrorMessage"
+      );
+      cardNumberErrorMessage.style.display = "block";
+    }
+  } else if (type == "carhHolderNameInput") {
+    if (cardHolderName.trim().length == 0) {
+      cardHolderNameFlag = false;
+      document.getElementById("cardHolderNameErrorMessage").style.display =
+        "block";
+    } else {
+      cardHolderNameFlag = true;
+      document.getElementById("cardHolderNameErrorMessage").style.display =
+        "none";
+    }
+  } else if (type == "cvvInput") {
+    if (cvv.length < 3) {
+      errorMessageBox.style.display = "block";
+    } else {
+      errorMessageBox.style.display = "none";
+    }
+  }
+
   if (
     card_number.length == 16 &&
     cardHolderName.trim().length != 0 &&
@@ -178,14 +183,4 @@ const hanleCheckPayNowbuttonEnable = () => {
 
 const handleValidateCardHolderName = () => {
   let cardholdername = document.getElementById("cardHolderName");
-  // console.log(cardholdername.value.trim());
-  if (cardholdername.value.trim().length == 0) {
-    cardHolderNameFlag = false;
-    document.getElementById("cardHolderNameErrorMessage").style.display =
-      "block";
-  } else {
-    cardHolderNameFlag = true;
-    document.getElementById("cardHolderNameErrorMessage").style.display =
-      "none";
-  }
 };
