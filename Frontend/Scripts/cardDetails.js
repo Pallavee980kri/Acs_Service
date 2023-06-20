@@ -44,8 +44,7 @@ const handleSubmit = async () => {
       expiry_month: expiryMonth,
       expiry_year: expiryYear,
     };
-    console.log(formContent);
-
+  
     let res = await fetch("http://localhost:8000/process_payment", {
       method: "POST",
       headers: {
@@ -61,7 +60,6 @@ const handleSubmit = async () => {
       localStorage.setItem("card_number", formContent.card_number);
       window.location.href = "otpPage.html";
     } else {
-      // document.getElementById("pleaseWait").style.display = "block";
       document.getElementById("submitButton").style.display = "block";
       document.getElementById("pleaseWait").style.display = "none";
 
@@ -103,10 +101,10 @@ const handleValidationForCvv = () => {
   var key = event.key;
   var numbers = "0123456789";
   if (
-    event.keyCode !== 8 &&
-    event.keyCode !== 37 &&
-    event.keyCode !== 39 &&
-    event.keyCode !== 46
+    event.keyCode !== 8 && //backspace
+    event.keyCode !== 37 && //leftarrow
+    event.keyCode !== 39 && //rightarrow
+    event.keyCode !== 46   //delete btn
   ) {
     if (!numbers.includes(key)) {
       event.preventDefault();
