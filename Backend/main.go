@@ -194,7 +194,7 @@ func processPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorMessagesResponse(w, r, "Failed to query the database")
 		return
 	}
-    otp := generateOTP()
+	otp := generateOTP()
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE ID = ?"
 	_, err = db.Exec(updateQuery, otp, storedCard.ID)
 
@@ -271,7 +271,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 			ErrorMessagesResponse(w, r, "Failed to update OTP count")
 			return
 		}
-		log.Println("OTP matched successfully. Count:", count)
+		log.Println("OTP matched successfully.")
 	} else {
 		if count >= 3 {
 			log.Println("OTP matched maximum number of times")
@@ -306,7 +306,7 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 		ErrorMessagesResponse(w, r, "Failed to parse JSON payload")
 		return
 	}
-    otp := generateOTP()
+	otp := generateOTP()
 
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE card_number = ?"
