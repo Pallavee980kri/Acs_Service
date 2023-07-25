@@ -299,6 +299,7 @@ func matchOTP(w http.ResponseWriter, r *http.Request) {
 // API for resend the OTP
 func resendOTP(w http.ResponseWriter, r *http.Request) {
 	cancelTimer <- struct{}{}
+	log.Println("hello otp checked")
 	var carddata carddetails
 	err := json.NewDecoder(r.Body).Decode(&carddata)
 	if err != nil {
@@ -307,10 +308,10 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	otp := generateOTP()
-
 	// Update the OTP in the database
 	updateQuery := "UPDATE card_information SET OTP = ? WHERE card_number = ?"
 	_, err = db.Exec(updateQuery, otp, carddata.Card_number)
+	log.Println("hello otp")
 	if err != nil {
 		log.Println("Error resending the OTP in the database:", err)
 		ErrorMessagesResponse(w, r, "Failed to resend OTP in the database")
@@ -340,10 +341,10 @@ func resendOTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Function to generate a random OTP
+// from[100000-900000]to (0-n)
 func generateOTP() int {
 	otp := rand.Intn(900000) + 100000
 	return otp
-
 }
 
 // sending error msg in json format
